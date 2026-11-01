@@ -1,0 +1,18 @@
+# dev-process-light 설치 기록 -- 다음 설치가 직접 고친 것을 알아보려고 (지우면 다음 설치가 한 번 더 묻는다)
+installed .claude/skills/data-light 117886cbd2640de5
+installed .claude/skills/light-check 03f0ad613a6e8778
+installed .claude/skills/light-manual 4b118b6d572f3aa1
+installed .claude/skills/light-portal 4469356efa1ef0ae
+installed .claude/skills/light-resume aa0b892a8a44957c
+installed .claude/skills/light-save 89faa4a7ac52dc1a
+installed .claude/skills/light-start 2b40a2888fed2da5
+installed .claude/skills/light-undo 76675bbc9e9f40c4
+installed .agents/skills/data-light 117886cbd2640de5
+installed .agents/skills/light-check 03f0ad613a6e8778
+installed .agents/skills/light-manual 4b118b6d572f3aa1
+installed .agents/skills/light-portal 4469356efa1ef0ae
+installed .agents/skills/light-resume aa0b892a8a44957c
+installed .agents/skills/light-save 89faa4a7ac52dc1a
+installed .agents/skills/light-start 2b40a2888fed2da5
+installed .agents/skills/light-undo 76675bbc9e9f40c4
+installed AGENTS 0e70b5d7da0770de

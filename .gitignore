@@ -1,0 +1,13 @@
+node_modules/
+dist/
+coverage/
+test-results/
+playwright-report/
+*.tsbuildinfo
+.DS_Store
+*:Zone.Identifier
+# 기획서 원본은 공개 저장소에 올리지 않는다 (DECISIONS.md 참고)
+doc/PRD/*.docx
+# 기록 보기 페이지(생성물)
+dev-notes/outputs/
+.claude/skills/.light-backup/
