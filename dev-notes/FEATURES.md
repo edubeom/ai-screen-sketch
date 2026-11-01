@@ -5,7 +5,7 @@
 
 | 기능 | 상태 | 쓰는 파일 | 확인 방법 (한 줄) | 설명서 |
 |---|---|---|---|---|
-| (예) 메모 | ✅ 동작 | index.html, memo.js | 메모를 쓰고 새로고침해도 남아 있다 | manual/memo.html |
+| 설계 코어 | ✅ 동작 | packages/core/src/types.ts, labels.ts, factory.ts, ops.ts, validate.ts, digest.ts | `npm test` 의 core.test.ts 통과 | (내부 모듈) |
 
 상태: ✅ 동작 · 🚧 만드는 중 · ⚠️ 문제 있음 · 💤 쉬는 중
 
@@ -15,12 +15,12 @@ AI 가 채웁니다 (사용자에게 묻지 않고 프로젝트에서 읽어서)
 
 | 부분 | 무엇으로 | 어디서 | 파일·설정 |
 |---|---|---|---|
-| (예) 화면 | HTML · 자바스크립트 | GitHub Pages | index.html, app.js |
-| (예) 저장 | 브라우저 localStorage | 사용자의 브라우저 | NAMES.md 의 저장 이름 |
+| 코드 구성 | npm 워크스페이스 (TypeScript) | 내 컴퓨터 | package.json, tsconfig.json |
+| 시험 | Vitest (단위) | 내 컴퓨터 | vitest.config.ts, packages/*/test |
 
 ## 함께 쓰는 파일
 여러 기능이 같이 쓰는 파일입니다. 이 파일을 고치면 **모든 기능**을 점검합니다.
-- (예) style.css, index.html
+- packages/core/src/types.ts (데이터 계약 -- 바꾸면 모든 기능 점검)
 
 ## 데이터 (표)
 `data/model.light.json`(data-light 정본)의 표를 어느 기능이 쓰는지 적습니다. 표·칸을 바꾸면 그 표를 쓰는 **모든 기능**을 점검합니다.
@@ -28,4 +28,3 @@ AI 가 채웁니다 (사용자에게 묻지 않고 프로젝트에서 읽어서)
 
 | 표 | 이름표 | 쓰는 기능 |
 |---|---|---|
-| (예) member | 회원 | 회원 명단, 회비 |

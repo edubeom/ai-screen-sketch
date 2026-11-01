@@ -1,0 +1,11 @@
+{
+  "name": "@sketch/exporters",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "dependencies": {
+    "jszip": "^3.10.2"
+  }
+}

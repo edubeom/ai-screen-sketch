@@ -1,0 +1,33 @@
+{
+  "name": "ai-screen-sketch",
+  "private": true,
+  "version": "0.1.0",
+  "description": "화면을 그리고 동작을 정의해 AI 개발자에게 전달하는 단독 실행 스케치 도구",
+  "license": "MIT",
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "packages/adapters/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w @sketch/editor",
+    "build": "npm run build -w @sketch/editor",
+    "preview": "npm run preview -w @sketch/editor",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "e2e": "playwright test",
+    "check": "npm run typecheck && npm run test && npm run build && npm run e2e"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.1",
+    "@types/node": "^22.20.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "fake-indexeddb": "^6.2.7",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.5",
+    "vitest": "^5.0.5"
+  }
+}
