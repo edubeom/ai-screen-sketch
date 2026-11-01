@@ -4,3 +4,4 @@ export * from './factory.ts';
 export * from './ops.ts';
 export * from './validate.ts';
 export * from './digest.ts';
+export * from './geometry.ts';

@@ -1,0 +1,720 @@
+{
+  "schemaVersion": 1,
+  "id": "ahnda-planner",
+  "title": "AHNDA 할 일 및 일정",
+  "revision": 1,
+  "updatedAt": "2026-11-02T00:00:00.000Z",
+  "assets": [],
+  "screens": [
+    {
+      "id": "main",
+      "name": "일정과 할 일",
+      "width": 1440,
+      "height": 900,
+      "elements": [
+        {
+          "id": "page_title",
+          "type": "text",
+          "name": "페이지 제목",
+          "x": 24,
+          "y": 16,
+          "width": 420,
+          "height": 36,
+          "zIndex": 0,
+          "props": {},
+          "semanticRole": "page_title",
+          "notes": "",
+          "text": "AHNDA 할 일 및 일정"
+        },
+        {
+          "id": "calendar",
+          "type": "group",
+          "name": "캘린더",
+          "x": 24,
+          "y": 64,
+          "width": 1040,
+          "height": 460,
+          "zIndex": 1,
+          "props": {
+            "layoutIntent": "캘린더는 위, 작업 목록은 아래. 둘 사이 경계선을 끌어 높이를 조절"
+          },
+          "semanticRole": "calendar",
+          "notes": "일 주 월 전환"
+        },
+        {
+          "id": "calendar_frame",
+          "type": "region",
+          "name": "캘린더 틀",
+          "x": 24,
+          "y": 64,
+          "width": 1040,
+          "height": 460,
+          "zIndex": 2,
+          "props": {},
+          "semanticRole": "",
+          "notes": "",
+          "text": " ",
+          "parentId": "calendar"
+        },
+        {
+          "id": "calendar_title",
+          "type": "text",
+          "name": "캘린더 제목",
+          "x": 40,
+          "y": 76,
+          "width": 240,
+          "height": 32,
+          "zIndex": 3,
+          "props": {},
+          "semanticRole": "",
+          "notes": "",
+          "text": "2026년 11월 2주",
+          "parentId": "calendar"
+        },
+        {
+          "id": "view_day",
+          "type": "button",
+          "name": "일 보기",
+          "x": 868,
+          "y": 74,
+          "width": 56,
+          "height": 32,
+          "zIndex": 4,
+          "props": {},
+          "semanticRole": "",
+          "notes": "",
+          "text": "일",
+          "parentId": "calendar"
+        },
+        {
+          "id": "view_week",
+          "type": "button",
+          "name": "주 보기",
+          "x": 932,
+          "y": 74,
+          "width": 56,
+          "height": 32,
+          "zIndex": 5,
+          "props": {},
+          "semanticRole": "",
+          "notes": "",
+          "text": "주",
+          "parentId": "calendar"
+        },
+        {
+          "id": "view_month",
+          "type": "button",
+          "name": "월 보기",
+          "x": 996,
+          "y": 74,
+          "width": 56,
+          "height": 32,
+          "zIndex": 6,
+          "props": {},
+          "semanticRole": "",
+          "notes": "",
+          "text": "월",
+          "parentId": "calendar"
+        },
+        {
+          "id": "calendar_time_grid",
+          "type": "region",
+          "name": "시간 칸",
+          "x": 40,
+          "y": 120,
+          "width": 1008,
+          "height": 388,
+          "zIndex": 7,
+          "props": {},
+          "semanticRole": "calendar_time_grid",
+          "notes": "",
+          "text": "시간 칸 -- 월~일 × 09:00~18:00 (작업을 끌어 놓는 곳)",
+          "parentId": "calendar"
+        },
+        {
+          "id": "schedule_block_sample",
+          "type": "card",
+          "name": "작업 블록 예시",
+          "x": 196,
+          "y": 200,
+          "width": 132,
+          "height": 56,
+          "zIndex": 8,
+          "props": {
+            "fill": "#dbeafe"
+          },
+          "semanticRole": "schedule_block",
+          "notes": "",
+          "text": "회의 준비 10:00-11:00",
+          "parentId": "calendar"
+        },
+        {
+          "id": "split_handle",
+          "type": "connector",
+          "name": "경계선",
+          "x": 24,
+          "y": 536,
+          "width": 1040,
+          "height": 0,
+          "zIndex": 9,
+          "props": {
+            "connectorKind": "plain"
+          },
+          "semanticRole": "split_handle",
+          "notes": "",
+          "text": "경계선 -- 끌어서 높이 조절"
+        },
+        {
+          "id": "task_list",
+          "type": "group",
+          "name": "작업 목록",
+          "x": 24,
+          "y": 548,
+          "width": 1040,
+          "height": 328,
+          "zIndex": 10,
+          "props": {},
+          "semanticRole": "task_list",
+          "notes": ""
+        },
+        {
+          "id": "task_list_frame",
+          "type": "list",
+          "name": "작업 목록 틀",
+          "x": 24,
+          "y": 548,
+          "width": 1040,
+          "height": 328,
+          "zIndex": 11,
+          "props": {},
+          "semanticRole": "",
+          "notes": "",
+          "text": " ",
+          "parentId": "task_list"
+        },
+        {
+          "id": "task_list_title",
+          "type": "text",
+          "name": "작업 목록 제목",
+          "x": 40,
+          "y": 560,
+          "width": 120,
+          "height": 32,
+          "zIndex": 12,
+          "props": {},
+          "semanticRole": "",
+          "notes": "",
+          "text": "할 일",
+          "parentId": "task_list"
+        },
+        {
+          "id": "add_task",
+          "type": "button",
+          "name": "작업 추가",
+          "x": 912,
+          "y": 556,
+          "width": 136,
+          "height": 36,
+          "zIndex": 13,
+          "props": {},
+          "semanticRole": "",
+          "notes": "",
+          "text": "+ 작업 추가",
+          "parentId": "task_list"
+        },
+        {
+          "id": "task_card_01",
+          "type": "card",
+          "name": "작업 카드 1",
+          "x": 40,
+          "y": 608,
+          "width": 1008,
+          "height": 64,
+          "zIndex": 14,
+          "props": {},
+          "semanticRole": "task_card",
+          "notes": "",
+          "text": "기획서 검토 · 마감 11/5",
+          "parentId": "task_list"
+        },
+        {
+          "id": "task_card_02",
+          "type": "card",
+          "name": "작업 카드 2",
+          "x": 40,
+          "y": 684,
+          "width": 1008,
+          "height": 64,
+          "zIndex": 15,
+          "props": {},
+          "semanticRole": "task_card",
+          "notes": "",
+          "text": "디자인 초안 · 선행: 기획서 검토 · 마감 11/7",
+          "parentId": "task_list"
+        },
+        {
+          "id": "task_card_03",
+          "type": "card",
+          "name": "작업 카드 3 (완료)",
+          "x": 40,
+          "y": 760,
+          "width": 1008,
+          "height": 64,
+          "zIndex": 16,
+          "props": {
+            "fill": "#f1f5f9"
+          },
+          "semanticRole": "task_card",
+          "notes": "",
+          "text": "✓ 회의실 예약 (완료)",
+          "parentId": "task_list"
+        },
+        {
+          "id": "detail_panel",
+          "type": "group",
+          "name": "상세 패널",
+          "x": 1088,
+          "y": 64,
+          "width": 328,
+          "height": 812,
+          "zIndex": 17,
+          "props": {
+            "layoutIntent": "오른쪽 고정 폭 328px, 작업을 고르면 내용이 바뀜"
+          },
+          "semanticRole": "detail_panel",
+          "notes": ""
+        },
+        {
+          "id": "detail_frame",
+          "type": "region",
+          "name": "상세 패널 틀",
+          "x": 1088,
+          "y": 64,
+          "width": 328,
+          "height": 812,
+          "zIndex": 18,
+          "props": {},
+          "semanticRole": "",
+          "notes": "",
+          "text": " ",
+          "parentId": "detail_panel"
+        },
+        {
+          "id": "detail_title",
+          "type": "text",
+          "name": "상세 제목",
+          "x": 1104,
+          "y": 76,
+          "width": 200,
+          "height": 32,
+          "zIndex": 19,
+          "props": {},
+          "semanticRole": "",
+          "notes": "",
+          "text": "작업 상세",
+          "parentId": "detail_panel"
+        },
+        {
+          "id": "detail_task_title",
+          "type": "input",
+          "name": "제목 입력",
+          "x": 1104,
+          "y": 124,
+          "width": 296,
+          "height": 40,
+          "zIndex": 20,
+          "props": {
+            "placeholder": "작업 제목",
+            "dataBinding": "task.title"
+          },
+          "semanticRole": "",
+          "notes": "",
+          "text": "기획서 검토",
+          "parentId": "detail_panel"
+        },
+        {
+          "id": "detail_due",
+          "type": "input",
+          "name": "마감일 입력",
+          "x": 1104,
+          "y": 176,
+          "width": 296,
+          "height": 40,
+          "zIndex": 21,
+          "props": {
+            "placeholder": "YYYY-MM-DD",
+            "dataBinding": "task.due_date"
+          },
+          "semanticRole": "",
+          "notes": "",
+          "text": "2026-11-05",
+          "parentId": "detail_panel"
+        },
+        {
+          "id": "detail_prereq",
+          "type": "input",
+          "name": "선행 작업 선택",
+          "x": 1104,
+          "y": 228,
+          "width": 296,
+          "height": 40,
+          "zIndex": 22,
+          "props": {
+            "placeholder": "선행 작업 (선택)",
+            "dataBinding": "task.prerequisite_id"
+          },
+          "semanticRole": "",
+          "notes": "",
+          "text": "",
+          "parentId": "detail_panel"
+        },
+        {
+          "id": "detail_save",
+          "type": "button",
+          "name": "저장",
+          "x": 1104,
+          "y": 820,
+          "width": 296,
+          "height": 40,
+          "zIndex": 23,
+          "props": {},
+          "semanticRole": "",
+          "notes": "",
+          "text": "저장",
+          "parentId": "detail_panel"
+        },
+        {
+          "id": "memo_layout",
+          "type": "note",
+          "name": "배치 메모",
+          "x": 700,
+          "y": 16,
+          "width": 220,
+          "height": 40,
+          "zIndex": 24,
+          "props": {},
+          "semanticRole": "",
+          "notes": "",
+          "text": "위는 달력, 아래는 할 일"
+        }
+      ],
+      "interactions": [
+        {
+          "id": "ix_drop_task",
+          "sourceId": "task_card_01",
+          "trigger": "drag_drop",
+          "targetId": "calendar_time_grid",
+          "action": "create_item",
+          "condition": "작업이 완료 상태가 아니고, 선행 작업이 모두 완료됨",
+          "effect": "놓은 날짜와 시간에 작업 블록 생성 (기본 길이 1시간)",
+          "dataChange": "task 는 유지하고 schedule_block 생성 (task_id, start_at, end_at)",
+          "errorState": "선행 미완료: 놓기를 거부하고 \"선행 작업을 먼저 끝내세요\" 안내 / 시간 충돌: 겹치는 블록을 강조하고 그래도 둘지 확인 / 마감 이후 배치: 경고 표시 / 저장 실패: 카드를 원위치하고 오류 문구",
+          "acceptance": "새로고침 후 배치가 유지되고 작업의 마감일은 그대로다"
+        },
+        {
+          "id": "ix_drop_blocked",
+          "sourceId": "task_card_02",
+          "trigger": "drag_drop",
+          "targetId": "calendar_time_grid",
+          "action": "create_item",
+          "condition": "선행 작업(기획서 검토)이 미완료",
+          "effect": "작업 블록을 만들지 않음",
+          "dataChange": "변경 없음",
+          "errorState": "선행 미완료 안내: \"기획서 검토를 먼저 끝내세요\" -- 카드는 목록 자리로 돌아감",
+          "acceptance": "선행이 미완료인 카드를 놓으면 블록이 생기지 않고 안내가 보인다"
+        },
+        {
+          "id": "ix_open_detail",
+          "sourceId": "task_card_01",
+          "trigger": "click",
+          "targetId": "detail_panel",
+          "action": "open_panel",
+          "effect": "오른쪽 상세 패널에 고른 작업의 제목·마감일·선행 작업 표시",
+          "errorState": "작업을 불러오지 못하면 패널에 오류 상태 표시",
+          "acceptance": "카드를 누르면 상세 패널 내용이 그 작업으로 바뀐다"
+        },
+        {
+          "id": "ix_add_task",
+          "sourceId": "add_task",
+          "trigger": "click",
+          "targetId": "task_list_frame",
+          "action": "create_item",
+          "effect": "목록 맨 위에 빈 작업 카드를 추가하고 상세 패널의 제목 입력에 커서",
+          "dataChange": "task 생성 (title 빈 값은 저장하지 않음)",
+          "errorState": "저장 실패 시 추가한 카드에 오류 표시, 다시 시도 버튼",
+          "acceptance": "작업 추가 후 제목을 적고 저장하면 새로고침해도 목록에 남는다"
+        },
+        {
+          "id": "ix_save_detail",
+          "sourceId": "detail_save",
+          "trigger": "click",
+          "targetId": "task_card_01",
+          "action": "set_value",
+          "condition": "제목이 비어 있지 않음",
+          "effect": "입력한 제목·마감일을 작업 카드와 캘린더 블록에 반영",
+          "dataChange": "task.title, task.due_date 변경",
+          "errorState": "제목이 비면 저장 버튼 비활성 / 저장 실패 시 입력값 유지 + 오류 문구",
+          "acceptance": "저장 후 목록 카드 문구가 바뀌고 새로고침해도 유지된다"
+        },
+        {
+          "id": "ix_view_week",
+          "sourceId": "view_week",
+          "trigger": "click",
+          "targetId": "calendar_time_grid",
+          "action": "set_value",
+          "effect": "시간 칸을 주 보기로 전환 (일·월 버튼도 같은 방식)",
+          "errorState": "",
+          "acceptance": "주 버튼을 누르면 7일 칸이 보인다"
+        }
+      ],
+      "states": [
+        {
+          "id": "st_list_empty",
+          "kind": "empty",
+          "targetId": "task_list_frame",
+          "description": "\"할 일이 없습니다\" 문구와 작업 추가 버튼 강조"
+        },
+        {
+          "id": "st_cal_loading",
+          "kind": "loading",
+          "targetId": "calendar_time_grid",
+          "description": "시간 칸에 회색 블록 자리 표시"
+        },
+        {
+          "id": "st_list_error",
+          "kind": "error",
+          "targetId": "task_list_frame",
+          "description": "\"목록을 불러오지 못했습니다\" + 다시 시도 버튼"
+        },
+        {
+          "id": "st_done_card",
+          "kind": "disabled",
+          "targetId": "task_card_03",
+          "description": "완료된 작업은 흐리게, 끌 수 없음"
+        }
+      ],
+      "notes": [
+        {
+          "id": "note_resp",
+          "kind": "responsive",
+          "text": "태블릿은 상세 패널을 아래 시트로. 모바일은 목록 탭 전환, 드래그 대신 시간 배정 버튼 (화면 2)"
+        },
+        {
+          "id": "note_undecided",
+          "kind": "undecided",
+          "text": "주 보기 시간 칸 단위(30분/1시간)는 미정"
+        }
+      ],
+      "strokes": [
+        {
+          "id": "stk_arrow",
+          "color": "#7c3aed",
+          "width": 3,
+          "points": [
+            [
+              540,
+              640
+            ],
+            [
+              520,
+              600
+            ],
+            [
+              480,
+              520
+            ],
+            [
+              420,
+              420
+            ],
+            [
+              360,
+              300
+            ],
+            [
+              330,
+              262
+            ]
+          ]
+        },
+        {
+          "id": "stk_arrow_head",
+          "color": "#7c3aed",
+          "width": 3,
+          "points": [
+            [
+              312,
+              284
+            ],
+            [
+              330,
+              262
+            ],
+            [
+              344,
+              290
+            ]
+          ]
+        }
+      ]
+    },
+    {
+      "id": "mobile",
+      "name": "모바일 일정과 할 일",
+      "width": 390,
+      "height": 844,
+      "elements": [
+        {
+          "id": "m_title",
+          "type": "text",
+          "name": "페이지 제목",
+          "x": 16,
+          "y": 16,
+          "width": 200,
+          "height": 32,
+          "zIndex": 0,
+          "props": {},
+          "semanticRole": "",
+          "notes": "",
+          "text": "AHNDA"
+        },
+        {
+          "id": "m_tab_calendar",
+          "type": "button",
+          "name": "달력 탭",
+          "x": 16,
+          "y": 64,
+          "width": 171,
+          "height": 40,
+          "zIndex": 1,
+          "props": {},
+          "semanticRole": "",
+          "notes": "",
+          "text": "달력"
+        },
+        {
+          "id": "m_tab_tasks",
+          "type": "button",
+          "name": "할 일 탭",
+          "x": 203,
+          "y": 64,
+          "width": 171,
+          "height": 40,
+          "zIndex": 2,
+          "props": {
+            "fill": "#cbd5e1"
+          },
+          "semanticRole": "",
+          "notes": "",
+          "text": "할 일"
+        },
+        {
+          "id": "m_task_list",
+          "type": "group",
+          "name": "작업 목록 (모바일)",
+          "x": 16,
+          "y": 120,
+          "width": 358,
+          "height": 600,
+          "zIndex": 3,
+          "props": {},
+          "semanticRole": "task_list",
+          "notes": ""
+        },
+        {
+          "id": "m_task_list_frame",
+          "type": "list",
+          "name": "작업 목록 틀",
+          "x": 16,
+          "y": 120,
+          "width": 358,
+          "height": 600,
+          "zIndex": 4,
+          "props": {},
+          "semanticRole": "",
+          "notes": "",
+          "text": " ",
+          "parentId": "m_task_list"
+        },
+        {
+          "id": "m_task_card_01",
+          "type": "card",
+          "name": "작업 카드 1",
+          "x": 28,
+          "y": 136,
+          "width": 334,
+          "height": 72,
+          "zIndex": 5,
+          "props": {},
+          "semanticRole": "task_card",
+          "notes": "",
+          "text": "기획서 검토 · 마감 11/5",
+          "parentId": "m_task_list"
+        },
+        {
+          "id": "m_assign_time",
+          "type": "button",
+          "name": "시간 배정",
+          "x": 246,
+          "y": 168,
+          "width": 104,
+          "height": 32,
+          "zIndex": 6,
+          "props": {},
+          "semanticRole": "",
+          "notes": "",
+          "text": "시간 배정",
+          "parentId": "m_task_list"
+        },
+        {
+          "id": "m_memo",
+          "type": "note",
+          "name": "모바일 메모",
+          "x": 16,
+          "y": 736,
+          "width": 358,
+          "height": 64,
+          "zIndex": 7,
+          "props": {},
+          "semanticRole": "",
+          "notes": "",
+          "text": "모바일: 목록 탭 전환, 드래그 대신 시간 배정 버튼"
+        }
+      ],
+      "interactions": [
+        {
+          "id": "ix_m_tab_calendar",
+          "sourceId": "m_tab_calendar",
+          "trigger": "click",
+          "targetScreenId": "main",
+          "action": "navigate",
+          "effect": "달력 탭으로 전환 (데스크톱 캘린더와 같은 내용, 한 열)",
+          "errorState": "",
+          "acceptance": "탭을 누르면 달력이 보이고 할 일 탭 선택이 풀린다"
+        },
+        {
+          "id": "ix_m_assign",
+          "sourceId": "m_assign_time",
+          "trigger": "click",
+          "targetId": "m_task_card_01",
+          "action": "open_panel",
+          "condition": "작업이 완료 상태가 아니고 선행 작업이 모두 완료됨",
+          "effect": "날짜·시간 고르기 시트를 열고, 고르면 작업 블록 생성 (데스크톱의 드롭과 같은 결과)",
+          "dataChange": "schedule_block 생성",
+          "errorState": "선행 미완료·시간 충돌·저장 실패는 데스크톱 드롭과 같게 안내",
+          "acceptance": "시간을 고르면 달력 탭에 블록이 보이고 새로고침 후에도 유지된다"
+        }
+      ],
+      "states": [
+        {
+          "id": "st_m_empty",
+          "kind": "empty",
+          "targetId": "m_task_list_frame",
+          "description": "\"할 일이 없습니다\""
+        }
+      ],
+      "notes": [],
+      "strokes": []
+    }
+  ]
+}

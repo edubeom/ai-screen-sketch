@@ -26,8 +26,10 @@ export interface ElementProps {
   assetId?: string;
   /** connector: 화면 이동(navigation) / 데이터 흐름(dataflow) / 단순 선(plain) */
   connectorKind?: 'navigation' | 'dataflow' | 'plain';
-  /** connector: 선이 대각선 반대 방향이면 true (x,y,width,height 상자의 오른쪽 위→왼쪽 아래) */
+  /** connector: 선이 왼쪽 아래→오른쪽 위 대각선이면 true (상자 x,y,width,height 기준) */
   flip?: boolean;
+  /** connector: 화살표가 시작점(왼쪽) 쪽에 있으면 true */
+  reverse?: boolean;
   /** 입력창 예시 값 등 */
   placeholder?: string;
   /** 업무 데이터 정본(data/model.light.json 등)의 표·칸 참조. 실제 DB 를 바꾸지 않는다 */

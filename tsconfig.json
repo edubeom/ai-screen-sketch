@@ -11,10 +11,11 @@
     "noFallthroughCasesInSwitch": true,
     "skipLibCheck": true,
     "isolatedModules": true,
+    "erasableSyntaxOnly": true,
     "resolveJsonModule": true,
     "allowImportingTsExtensions": true,
     "noEmit": true,
     "types": ["node"]
   },
-  "include": ["apps/*/src", "packages/**/src", "packages/**/test", "e2e", "*.config.ts"]
+  "include": ["apps/*/src", "apps/*/vite.config.ts", "examples/**/*.ts", "packages/**/src", "packages/**/test", "e2e", "*.config.ts"]
 }

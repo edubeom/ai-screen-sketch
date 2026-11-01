@@ -45,7 +45,10 @@ const ID_RE = /^[A-Za-z0-9_.:-]{1,80}$/;
 
 class Reader {
   errors: string[] = [];
-  constructor(private path: string) {}
+  private path: string;
+  constructor(path: string) {
+    this.path = path;
+  }
   at(sub: string | number): Reader {
     const r = new Reader(`${this.path}${typeof sub === 'number' ? `[${sub}]` : `.${sub}`}`);
     r.errors = this.errors;
@@ -151,6 +154,7 @@ function readElement(r: Reader, raw: unknown): SketchElement | undefined {
     if (ck) props.connectorKind = ck;
     if (typeof propsRaw.locked === 'boolean') props.locked = propsRaw.locked;
     if (typeof propsRaw.flip === 'boolean') props.flip = propsRaw.flip;
+    if (typeof propsRaw.reverse === 'boolean') props.reverse = propsRaw.reverse;
   }
   if (!id || !type || x === undefined || y === undefined || width === undefined || height === undefined || zIndex === undefined || semanticRole === undefined || notes === undefined) return undefined;
   const el: SketchElement = { id, type, name: name ?? id, x, y, width, height, zIndex, props, semanticRole, notes };
