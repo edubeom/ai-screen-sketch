@@ -5,6 +5,7 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   base: './',
   plugins: [react()],
-  server: { port: 5173, strictPort: false },
-  preview: { port: 4173 },
+  // WSL 에서 띄워도 Windows 브라우저로 열 수 있게 모든 주소에서 받는다 (localhost 만 받으면 IPv6(::1)로 묶여 안 열릴 수 있다)
+  server: { host: true, port: 5173, strictPort: false },
+  preview: { host: true, port: 4173 },
 });

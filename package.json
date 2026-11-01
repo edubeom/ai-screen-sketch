@@ -10,9 +10,9 @@
     "packages/adapters/*"
   ],
   "scripts": {
-    "dev": "npm run dev -w @sketch/editor",
+    "dev": "npm run dev -w @sketch/editor --",
     "build": "npm run build -w @sketch/editor",
-    "preview": "npm run preview -w @sketch/editor",
+    "preview": "npm run preview -w @sketch/editor --",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "e2e": "playwright test",
