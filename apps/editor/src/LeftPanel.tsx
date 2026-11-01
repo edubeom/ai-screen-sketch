@@ -42,7 +42,7 @@ export function LeftPanel() {
                 <span className="screen-ops">
                   <button onClick={() => moveScreen(s.id, -1)} disabled={i === 0} title="위로" aria-label="화면 위로">↑</button>
                   <button onClick={() => moveScreen(s.id, 1)} disabled={i === screens.length - 1} title="아래로" aria-label="화면 아래로">↓</button>
-                  <button onClick={() => duplicateCurrentScreen()} title="복제 (상태 화면 만들기)" aria-label="화면 복제">⧉</button>
+                  <button onClick={() => duplicateCurrentScreen()} title="복제 (상태 화면 만들기)" aria-label="화면 복제">복제</button>
                   <button
                     onClick={() => {
                       if (confirm(`"${s.name}" 화면을 지울까요? (실행 취소로 되돌릴 수 있습니다)`)) deleteScreen(s.id);

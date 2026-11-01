@@ -111,7 +111,7 @@ function ScreenProps({ screen }: { screen: Screen }) {
         <Num label="높이" value={screen.height} onChange={(v) => set({ height: Math.max(100, Math.min(20000, Math.round(v))) }, 'h')} />
       </div>
       <p className="muted">크기가 다른 화면은 따로 설계합니다. 상세 상태를 그리려면 화면을 복제하세요.</p>
-      <button className="btn small" onClick={() => duplicateCurrentScreen(`${screen.name} (상태)`)}>⧉ 상태 화면으로 복제</button>
+      <button className="btn small" onClick={() => duplicateCurrentScreen(`${screen.name} (상태)`)}>상태 화면으로 복제</button>
 
       <StatesEditor screen={screen} />
 

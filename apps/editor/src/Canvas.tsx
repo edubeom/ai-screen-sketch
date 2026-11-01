@@ -44,7 +44,7 @@ import { addElementAt, addImageFile, addPresetAt, GRID, setViewportSize, zoomTo 
 type Handle = 'nw' | 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'a' | 'b';
 
 type Drag =
-  | { kind: 'move'; start: Pt; ids: string[]; anchor: Rect; moved: boolean }
+  | { kind: 'move'; start: Pt; ids: string[]; anchor: Rect; moved: boolean; clickedId: string }
   | { kind: 'resize'; start: Pt; id: string; handle: Handle; orig: SketchElement }
   | { kind: 'marquee'; start: Pt; cur: Pt; additive: boolean }
   | { kind: 'pan'; startClient: Pt; startPan: Pt }
@@ -278,7 +278,7 @@ export function Canvas() {
       svg.setPointerCapture(e.pointerId);
       beginGesture();
       const anchor = els.find((x) => x.id === id) ?? els[0];
-      setD({ kind: 'move', start: p, ids: sel, anchor: { x: anchor.x, y: anchor.y, width: anchor.width, height: anchor.height }, moved: false });
+      setD({ kind: 'move', start: p, ids: sel, anchor: { x: anchor.x, y: anchor.y, width: anchor.width, height: anchor.height }, moved: false, clickedId: id });
       return;
     }
     // 빈 곳: 영역 선택
@@ -380,8 +380,12 @@ export function Canvas() {
           updateScreen((sc) => addStroke(sc, stroke));
         }
         break;
-      case 'erase':
       case 'move':
+        endGesture();
+        // 여러 개를 고른 상태에서 끌지 않고 누르기만 했으면 누른 것만 고른다
+        if (!d.moved && s.selection.length > 1) setState({ selection: [d.clickedId] });
+        break;
+      case 'erase':
       case 'resize':
         endGesture();
         break;
@@ -424,7 +428,8 @@ export function Canvas() {
   const onDoubleClick = (e: React.MouseEvent) => {
     const s = getState();
     if (s.tool !== 'select') return;
-    const hitId = (e.target as Element).closest?.('[data-id]')?.getAttribute('data-id');
+    // 포인터 캡처 때문에 dblclick 의 target 은 svg 다 -- 좌표로 요소를 찾는다
+    const hitId = elementIdAt(e.clientX, e.clientY);
     if (!hitId) return;
     const id = selectableId(screen, hitId, s.enteredGroup);
     const el = byId.get(id);
@@ -462,6 +467,17 @@ export function Canvas() {
   const cursor = tool === 'pen' ? 'crosshair' : tool === 'eraser' ? 'cell' : tool === 'connect' || picking ? 'alias' : drag?.kind === 'pan' ? 'grabbing' : 'default';
 
   const center = (el: SketchElement): Pt => ({ x: el.x + el.width / 2, y: el.y + el.height / 2 });
+  /** 가운데에서 다른 점으로 가는 선이 상자 테두리와 만나는 점 -- 동작선이 가운데에 몰리지 않게 */
+  const edgePoint = (el: SketchElement, toward: Pt): Pt => {
+    const c = center(el);
+    const dx = toward.x - c.x;
+    const dy = toward.y - c.y;
+    if (!dx && !dy) return c;
+    const sx = dx ? el.width / 2 / Math.abs(dx) : Infinity;
+    const sy = dy ? el.height / 2 / Math.abs(dy) : Infinity;
+    const t = Math.min(sx, sy, 1);
+    return { x: c.x + dx * t, y: c.y + dy * t };
+  };
 
   return (
     <div className="canvas-wrap" ref={wrapRef} onDragOver={onDragOver} onDrop={onDrop}>
@@ -483,6 +499,7 @@ export function Canvas() {
           <g dangerouslySetInnerHTML={{ __html: arrowMarkers(['#2563eb', '#16a34a', '#475569', '#7c3aed', '#dc2626']) }} />
         </defs>
         <g ref={worldRef} transform={`translate(${pan.x} ${pan.y}) scale(${zoom})`}>
+          <rect className="artboard-shadow" x={2} y={3} width={screen.width} height={screen.height} />
           <rect className="artboard" x={0} y={0} width={screen.width} height={screen.height} />
           {grid && zoom > 0.35 && <rect x={0} y={0} width={screen.width} height={screen.height} fill="url(#grid)" pointerEvents="none" />}
           <g className={tool === 'select' || tool === 'connect' || picking ? '' : 'no-hit'}>
@@ -505,10 +522,13 @@ export function Canvas() {
                 const broken = !!interactionTargetProblem(project, screen, ix);
                 const a = center(src);
                 if (tgt) {
-                  const b = center(tgt);
+                  // 대상이 시작 요소를 감싸면(카드 → 그 카드가 든 목록) 가운데끼리 잇는다
+                  const inside = tgt.x <= src.x && tgt.y <= src.y && tgt.x + tgt.width >= src.x + src.width && tgt.y + tgt.height >= src.y + src.height;
+                  const a2 = inside ? a : edgePoint(src, center(tgt));
+                  const b = inside ? center(tgt) : edgePoint(tgt, center(src));
                   return (
                     <g key={ix.id} className={broken ? 'link broken' : 'link'}>
-                      <line x1={a.x} y1={a.y} x2={b.x} y2={b.y} strokeWidth={2 / zoom} markerEnd={`url(#arrow-${broken ? 'dc2626' : '7c3aed'})`} />
+                      <line x1={a2.x} y1={a2.y} x2={b.x} y2={b.y} strokeWidth={2 / zoom} markerEnd={`url(#arrow-${broken ? 'dc2626' : '7c3aed'})`} />
                     </g>
                   );
                 }

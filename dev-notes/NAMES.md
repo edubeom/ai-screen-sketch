@@ -7,5 +7,24 @@
 
 | 화면에 보이는 말 | 코드 이름 | 메모 |
 |---|---|---|
-| (예) 할 일 | todo | "task" 라고 쓰지 않는다 |
-| (예) 메모 저장 | memos (브라우저 저장 이름) | 이름을 바꾸면 쓰던 메모가 안 보인다 -- 바꾸기 전에 말한다 |
+| 프로젝트 | project (`Project`) | 설계 정본 = project.json |
+| 화면 | screen (`Screen`) | |
+| 요소 | element (`SketchElement`) | 종류는 아래 9가지 + 묶음 |
+| 영역 · 텍스트 · 버튼 · 입력창 · 목록 · 카드 · 이미지 · 메모 · 연결선 | region · text · button · input · list · card · image · note · connector | `ElementType` |
+| 묶음 | group | 자식은 `parentId` 로 가리킴 |
+| 묶음 프리셋 (캘린더 · 작업 목록 · 상세 패널) | preset (calendar · task_list · detail_panel) | |
+| 필기 | stroke (`Stroke`, points `[x,y,pressure?]`) | |
+| 동작 | interaction (`Interaction`) | "이벤트"·"액션"이라고 따로 부르지 않는다 |
+| 트리거 | trigger | click · double_click · input · change · drag_drop |
+| 결과 종류 | action | navigate · open_panel · expand_list · set_value · create_item · delete_item · external_link · custom |
+| 결과 · 사전 조건 · 데이터 변경 · 예외·실패 상태 · 검증 기준 | effect · condition · dataChange · errorState · acceptance | 빈 칸은 "미정" 으로 내보냄 |
+| 검증 기준 id | `AC-<동작 id>` | requirements.md · traceability.json 공통 |
+| 깨진 연결 | (대상 요소·화면이 없는 동작) | `interactionTargetProblem` |
+| 상태 | state (`ScreenState`) | normal · empty · loading · error · disabled = 정상 · 빈 화면 · 불러오는 중 · 오류 · 비활성 |
+| 화면 메모 | notes (`ScreenNote`) | general · responsive · undecided = 메모 · 반응형 · 미정 |
+| 역할 · 배치 의도 · 데이터 연결 | semanticRole · props.layoutIntent · props.dataBinding | |
+| 설계 묶음 | bundle (ZIP) | |
+| 전달 방식 | profile | standalone · dev-light · dev-framework = 단독 · dev-process-light · 전문판(전달 초안) |
+| 검증 결과 | issues (`SpecIssue`) | 차단 error · 경고 warning · 안내 info |
+| 저장 번호 | revision (`savedRevision`) | 실행 취소 히스토리와 따로 |
+| 브라우저 저장소 | IndexedDB `ai-screen-sketch` (저장소 projects · assets · meta, 열쇠 lastProjectId) | **이름을 바꾸면 쓰던 프로젝트가 안 보인다 -- 바꾸기 전에 말한다** |

@@ -3,6 +3,9 @@
 > "왜 이렇게 했지?"를 나중에 찾을 수 있게, 중요한 결정만 한 줄씩 남깁니다. 최신이 위.
 > **누가 정했는지** 앞에 적습니다: `[사용자]` 는 사용자의 답을 따옴표로, `[AI]` 는 이유와 다른 안을 함께.
 
+- 2026-11-02 [AI] 라이선스는 정하지 않음 (package.json 에서도 뺌) -- 공개 저장소의 라이선스는 사용자가 정할 일 (다른 안: MIT)
+- 2026-11-02 [AI] 브라우저 시험의 시스템 라이브러리(libnspr4·libnss3·libasound2)는 sudo 없이 임시 폴더에 풀어 사용, 저장소에는 넣지 않음 -- 다른 컴퓨터에서는 `npx playwright install --with-deps chromium` (README)
+
 - 2026-11-02 [AI] ZIP 안 배치는 Light 수동 배치 경로(design/sketch/<project-id>/)에 그대로 풀 수 있게: 최상위 project.json·requirements.md·manifest.json·validation-report.json·screens/·assets/, profile 전달물은 exports/<profile>/ (다른 안: 최상위 폴더 하나로 감싸기)
 - 2026-11-02 [AI] 내보내기 차단 = 깨진 연결·필수 대상 없음(화면 이동의 화면, 드래그 앤 드롭·패널 열기·목록 펼치기·값 변경의 대상 요소). 빈 결과·예외·검증 기준은 경고 후 "미정" (기획서 4장 "필수 대상이 없는 동작은 차단, 빈 예외 설명은 경고")
 - 2026-11-02 [AI] 요소·화면·PNG 가 같게 보이도록 요소 모양을 `describeElement` 한 곳에서 정의 (다른 안: 편집기와 PNG 렌더러를 따로)

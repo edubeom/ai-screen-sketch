@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>동작·상태·검증 — AI 화면 스케치 사용설명서</title>
+<link rel="stylesheet" href="assets/manual.css">
+<style>
+/* 실제 화면 캡처 + 누르는 곳 강조(.hl) */
+.slide .shot { position: relative; width: fit-content; max-width: 100%; margin: 0 auto; border-color: var(--line); border-radius: .5em; }
+.slide .shot { flex: 0 0 auto; }
+.slide .row > .shot { flex: 0 0 auto; }
+.slide .shot img { display: block; height: var(--h); width: var(--w); max-width: none; }
+.slide .shot .hl { position: absolute; display: block; border-radius: .25em; outline-offset: .05em; }
+.slide .flow.v { gap: 1em; }
+.slide .flow.v > li { padding: .4em .9em .4em 2.9em; gap: .1em; }
+.slide .flow.v > li:not(:last-child)::after { bottom: -1.1em; font-size: .8em; }
+.slide .row.mid > .flow.v, .slide .row.mid > .kv, .slide .row.mid > table { flex: 1; }
+.slide .tag { display: inline-block; background: var(--warn); color: #fff; border-radius: .3em; padding: 0 .4em; font-size: .8em; font-weight: 700; }
+.slide .pick { display: inline-block; position: relative; width: .8em; height: .8em; border: .13em solid currentColor; border-radius: 50%; vertical-align: -.05em; margin: 0 .1em; }
+.slide .pick::before, .slide .pick::after { content: ""; position: absolute; background: currentColor; }
+.slide .pick::before { left: 50%; top: -.35em; bottom: -.35em; width: .12em; transform: translateX(-50%); }
+.slide .pick::after { top: 50%; left: -.35em; right: -.35em; height: .12em; transform: translateY(-50%); }
+.slide .card > i { color: var(--accent); }
+.slide .row.mid { align-items: center; }
+.slide .tight .item { padding: .2em .2em; }
+.slide .cover-mark { font-size: 3.4em; line-height: 1; letter-spacing: .1em; color: #c7e0cf; }
+</style>
+<script defer src="assets/manual.js"></script>
+</head>
+<body data-manual="AI 화면 스케치 사용설명서" data-index="index.html"
+      data-chapters="index.html|처음;sketch.html|그리기·필기;interaction.html|동작·상태·검증;export.html|내보내기·가져오기">
+
+<section class="slide" data-kind="cover" data-title="동작·상태·검증">
+  <div class="body">
+    <div class="cover-mark">↗ ☐ ⚠</div>
+    <h1>동작 · 상태 · 검증</h1>
+    <p class="lead">버튼을 누르면 무엇이 되는지 적고, 빈 화면·오류 같은 상태와 빠진 것을 확인합니다</p>
+  </div>
+  <aside class="notes">동작과 상태와 검증 장입니다. 그림만 보고는 버튼을 누르면 무엇이 되는지 AI 가 알 수 없습니다. 그래서 요소마다 동작을 적어 둡니다. 이 장에서는 동작을 만들고 칸을 채우는 법, 빈 화면이나 오류 같은 상태를 적는 법, 아래 검증 결과로 빠진 것을 찾는 법을 봅니다.</aside>
+</section>
+<section class="slide" data-kind="overview" data-title="한눈에 보기">
+  <p class="kicker">한눈에 보기</p>
+  <h2>동작 → 상태 → 메모 → 확인</h2>
+  <div class="body">
+    <ol class="flow"><li><b>동작 만들기</b><span>동작 연결로 끌기 · + 동작 추가</span></li><li class="on"><b>칸 채우기</b><span>결과 · 예외 · 검증 기준</span></li><li><b>상태 적기</b><span>빈 화면 · 불러오는 중 · 오류 · 비활성</span></li><li><b>화면 메모</b><span>반응형 차이 · 미정</span></li><li><b>검증 결과</b><span>차단을 0 으로</span></li></ol>
+    <div class="callout">비워 둔 칸은 AI 가 마음대로 채우지 않도록 <b>"미정"</b> 으로 내보내집니다</div>
+  </div>
+  <aside class="notes">이 장은 다섯 단계입니다. 먼저 동작을 만들고, 결과와 예외, 검증 기준 칸을 채웁니다. 이어서 빈 화면이나 오류처럼 평소와 다른 상태를 적고, 화면 메모에 반응형 차이와 미정 사항을 남깁니다. 마지막으로 아래 검증 결과에서 차단이 없는지 확인합니다. 비워 둔 칸은 미정으로 내보내지니 걱정하지 않아도 됩니다.</aside>
+</section>
+<section class="slide" data-kind="concept" data-title="동작 한 줄 읽는 법">
+  <p class="kicker">먼저 알아 두기</p>
+  <h2>언제 → 무엇이 → 어디에 → 확인</h2>
+  <div class="body">
+    <ol class="flow"><li><b>트리거</b><span>언제: 클릭 · 더블클릭 · 입력 · 선택 변경 · 드래그 앤 드롭</span></li><li><b>결과 종류</b><span>무엇: 화면 이동 · 패널 열기 · 값 변경 · 항목 생성/삭제 …</span></li><li><b>대상</b><span>어디에: 대상 요소 또는 이동할 화면</span></li><li><b>검증 기준</b><span>다 되었는지 확인하는 한 줄</span></li></ol>
+    <table class="grid"><tr><th>칸</th><th>예시</th></tr><tr><td>사전 조건</td><td>작업이 완료 상태가 아님</td></tr><tr><td>결과</td><td>놓은 날짜와 시간에 작업 블록 생성</td></tr><tr><td>예외·실패 상태</td><td>저장 실패 시 원위치</td></tr></table>
+  </div>
+  <aside class="notes">동작 하나는 이렇게 읽습니다. 언제, 곧 트리거가 일어나면, 어떤 결과 종류가, 어느 대상에 일어나는지, 그리고 다 되었는지 무엇으로 확인하는지입니다. 예를 들어 작업 카드를 시간 칸에 끌어 놓으면 그 시간에 작업 블록이 생긴다처럼 적습니다. 사전 조건과 데이터 변경, 예외 상태까지 적어 두면 AI 가 짐작할 일이 줄어듭니다.</aside>
+</section>
+<section class="slide" data-kind="step" data-title="1단계. 동작 연결로 끌기">
+  <p class="kicker">따라 하기 · 1 / 10</p>
+  <h2><span class="ui">동작 연결</span> 로 시작 요소에서 대상까지 끌기</h2>
+  <div class="body">
+    <div class="row mid">
+      <div class="screen shot" style="--h:10.00em;--w:21.21em"><img src="img/connect-drag.png" alt="버튼에서 영역으로 끄는 중"><span class="hl" style="left:5.6%;top:30.5%;width:18.5%;height:14.3%"></span></div>
+      <ol class="flow v"><li><b>동작 연결 (L)</b><span>위쪽 도구</span></li><li><b>시작 요소 누르기</b><span>예: 버튼</span></li><li><b>대상에 놓기</b><span>예: 열릴 패널</span></li></ol>
+    </div>
+    <div class="callout"><b>이렇게 보이면 성공</b> · 보라색 화살표가 남고, 아래에 "동작을 만들었습니다 -- 오른쪽에서 조건·결과·예외를 적어 주세요" 가 뜹니다</div>
+  </div>
+  <aside class="notes">첫 번째 단계입니다. 위쪽 도구에서 동작 연결을 누르거나 L 키를 누릅니다. 작업판 위쪽에 안내 문구가 뜨면, 시작 요소인 버튼을 누른 채 대상 요소까지 끌어 놓습니다. 보라색 화살표가 생기고 오른쪽에 동작 칸이 열립니다. 카드에서 시작하면 드래그 앤 드롭과 항목 생성이, 그 밖에는 클릭과 패널 열기가 미리 골라집니다.</aside>
+</section>
+<section class="slide" data-kind="step" data-title="2단계. + 동작 추가">
+  <p class="kicker">따라 하기 · 2 / 10</p>
+  <h2>또는 요소를 고르고 오른쪽 <span class="ui">+ 동작 추가</span></h2>
+  <div class="body">
+    <div class="row mid">
+      <div class="screen shot" style="--h:9.00em;--w:14.35em"><img src="img/add-interaction.png" alt="+ 동작 추가 버튼"><span class="hl" style="left:0.0%;top:80.0%;width:27.8%;height:16.2%"></span></div>
+      <ol class="flow v"><li><b>요소 고르기</b><span>선택 도구로 한 번 누르기</span></li><li><b>오른쪽 아래 동작 칸</b><span>트리거 → 결과</span></li><li><b>+ 동작 추가</b><span>새 동작 칸이 생김</span></li></ol>
+    </div>
+    <div class="callout"><b>이렇게 보이면 성공</b> · 오른쪽 동작 칸에 <b>클릭 → 사용자 정의 설명</b> 칸이 새로 생깁니다</div>
+  </div>
+  <aside class="notes">두 번째 단계입니다. 대상이 없는 동작이나 끌기 어려운 경우에는 요소를 고른 뒤 오른쪽 칸 아래의 더하기 동작 추가 버튼을 누릅니다. 클릭과 사용자 정의 설명으로 된 새 동작 칸이 생깁니다. 한 요소에 동작을 여러 개 붙일 수도 있습니다.</aside>
+</section>
+<section class="slide" data-kind="step" data-title="3단계. 트리거·결과 종류 고르기">
+  <p class="kicker">따라 하기 · 3 / 10</p>
+  <h2>맨 위 두 칸에서 <b>언제</b>와 <b>무엇이</b>를 고릅니다</h2>
+  <div class="body">
+    <div class="row mid">
+      <div class="screen shot" style="--h:16.00em;--w:9.25em"><img src="img/ix-card-new.png" alt="동작 칸 맨 위"><span class="hl" style="left:3.1%;top:2.4%;width:38.3%;height:6.3%"></span><span class="hl" style="left:47.8%;top:2.4%;width:38.3%;height:6.3%"></span></div>
+      <div class="kv"><b>트리거</b><span>클릭 · 더블클릭 · 입력 · 선택 변경 · 드래그 앤 드롭</span><b>결과 종류</b><span>화면 이동 · 패널 열기 · 목록 펼치기 · 값 변경 · 항목 생성 · 항목 삭제 · 외부 링크 · 사용자 정의 설명</span><b>✕</b><span>동작 지우기</span></div>
+    </div>
+    <div class="callout"><b>이렇게 보이면 성공</b> · 두 칸이 <b>클릭 → 패널 열기</b> 처럼 고른 대로 바뀝니다</div>
+  </div>
+  <aside class="notes">세 번째 단계입니다. 동작 칸 맨 위 왼쪽에서 트리거를, 화살표 오른쪽에서 결과 종류를 고릅니다. 화면 이동을 고르면 아래 칸이 이동할 화면으로 바뀌고, 외부 링크를 고르면 맨 아래 칸에 링크 주소를 적습니다. 오른쪽 엑스는 이 동작을 지웁니다.</aside>
+</section>
+<section class="slide" data-kind="step" data-title="4단계. 대상 고르기">
+  <p class="kicker">따라 하기 · 4 / 10</p>
+  <h2><b>대상 요소</b> 칸 또는 과녁 버튼 <span class="ui"><span class="pick" title="대상 고르기 버튼"></span></span> 로 고르기</h2>
+  <div class="body">
+    <div class="row mid">
+      <div class="screen shot" style="--h:16.00em;--w:9.25em"><img src="img/ix-card-new.png" alt="대상 요소 칸과 고르기 버튼"><span class="hl" style="left:3.1%;top:13.7%;width:94.9%;height:7.1%"></span></div>
+      <ol class="flow v"><li><b>목록에서 고르기</b><span>이름 · 종류로 보임</span></li><li><b>또는 과녁 버튼</b><span>작업판 위에 안내 문구가 뜸</span></li><li><b>작업판에서 누르기</b><span>그 요소가 대상이 됨 · Esc 취소</span></li></ol>
+    </div>
+    <div class="callout"><b>이렇게 보이면 성공</b> · 아래에 <b>대상: (요소 이름)</b> 알림이 뜨고 대상 요소 칸이 바뀝니다</div>
+  </div>
+  <aside class="notes">네 번째 단계입니다. 대상 요소 칸을 눌러 목록에서 고를 수 있습니다. 이름이 비슷해 헷갈리면 칸 옆의 과녁 모양 버튼을 누르세요. 작업판 위에 작업판에서 동작의 대상 요소를 누르세요 라는 안내가 뜨면, 대상이 될 요소를 누릅니다. 취소하려면 Esc 를 누릅니다.</aside>
+</section>
+<section class="slide" data-kind="step" data-title="5단계. 칸 채우기">
+  <p class="kicker">따라 하기 · 5 / 10</p>
+  <h2>아래 다섯 칸을 채웁니다</h2>
+  <div class="body">
+    <div class="row mid">
+      <div class="screen shot" style="--h:16.00em;--w:9.25em"><img src="img/ix-card-example.png" alt="예시의 채워진 동작 칸"><span class="hl" style="left:2.7%;top:22.0%;width:95.6%;height:64.7%"></span></div>
+      <div class="kv"><b>사전 조건</b><span>이럴 때만 된다</span><b>결과</b><span>눈에 보이는 결과</span><b>데이터 변경</b><span>무엇이 저장·변경되나</span><b>예외·실패 상태</b><span>안 될 때 보이는 것</span><b>검증 기준</b><span>다 됐는지 확인할 한 줄</span></div>
+    </div>
+    <div class="callout"><b>이렇게 보이면 성공</b> · 아래 검증 결과에서 그 동작의 <b>⚠ 경고</b> 줄이 하나씩 사라집니다</div>
+  </div>
+  <aside class="notes">다섯 번째 단계입니다. 동작 칸 아래쪽의 다섯 칸을 채웁니다. 사전 조건은 이럴 때만 된다, 결과는 눈에 보이는 결과, 데이터 변경은 무엇이 저장되는지, 예외 실패 상태는 안 될 때 보이는 것, 검증 기준은 다 됐는지 확인할 한 줄입니다. 결과, 예외, 검증 기준을 비워 두면 경고가 남고 미정으로 내보내집니다.</aside>
+</section>
+<section class="slide" data-kind="step" data-title="6단계. 깨진 연결 고치기">
+  <p class="kicker">따라 하기 · 6 / 10</p>
+  <h2><b>깨진 연결</b> → 새 대상 또는 <span class="ui">동작 제거</span></h2>
+  <div class="body">
+    <div class="row mid">
+      <div class="screen shot" style="--h:16.00em;--w:8.15em"><img src="img/ix-broken.png" alt="깨진 연결이 된 동작 칸"><span class="hl" style="left:3.1%;top:7.9%;width:94.6%;height:6.2%"></span><span class="hl" style="left:3.1%;top:25.6%;width:77.3%;height:5.5%"></span></div>
+      <ol class="flow v"><li><b>빨간 칸</b><span>대상 요소가 지워졌습니다 -- 깨진 연결</span></li><li><b>새 대상 고르기</b><span>대상 요소 칸 · 과녁 버튼</span></li><li><b>또는 동작 제거</b><span>필요 없는 동작이면</span></li></ol>
+    </div>
+    <div class="callout"><b>이렇게 보이면 성공</b> · 동작 칸의 빨간 표시가 사라지고, 아래 검증 결과의 <b>차단</b> 숫자가 0 이 됩니다</div>
+  </div>
+  <aside class="notes">여섯 번째 단계입니다. 동작의 대상 요소를 지우면 그 동작은 깨진 연결이 되어 빨갛게 표시됩니다. 깨진 연결이 있으면 내보내기가 막힙니다. 대상 요소 칸이나 과녁 버튼으로 새 대상을 고르거나, 필요 없는 동작이면 동작 제거를 누르세요. 대상을 실수로 지웠다면 컨트롤 Z 로 되돌려도 됩니다.</aside>
+</section>
+<section class="slide" data-kind="step" data-title="7단계. 요소 상태 적기">
+  <p class="kicker">따라 하기 · 7 / 10</p>
+  <h2>요소를 고르고 <span class="ui">+ 빈 화면</span> 같은 상태 더하기</h2>
+  <div class="body">
+    <div class="row mid">
+      <div class="screen shot" style="--h:9.00em;--w:18.06em"><img src="img/element-states.png" alt="요소의 상태 칸"><span class="hl" style="left:1.3%;top:17.2%;width:95.0%;height:37.1%"></span><span class="hl" style="left:1.3%;top:59.6%;width:93.7%;height:39.7%"></span></div>
+      <table class="grid"><tr><th>상태</th><th>예시</th></tr><tr><td>빈 화면</td><td>아직 할 일이 없어요 안내</td></tr><tr><td>불러오는 중</td><td>회색 자리 표시</td></tr><tr><td>오류</td><td>다시 시도 버튼</td></tr><tr><td>비활성</td><td>제목이 비어 있으면 회색</td></tr></table>
+    </div>
+    <div class="callout"><b>이렇게 보이면 성공</b> · 상태 줄이 생기고, 칸에 적은 설명(이 상태에서 보이는 것)이 남습니다</div>
+  </div>
+  <aside class="notes">일곱 번째 단계입니다. 목록이나 버튼은 평소 모습 말고도 비었을 때, 불러오는 중일 때, 오류일 때, 누를 수 없을 때의 모습이 있습니다. 요소를 고르고 오른쪽 상태 칸에서 더하기 버튼을 누른 뒤 그때 보이는 것을 짧게 적습니다. 특히 목록은 빈 상태를 적지 않으면 경고가 남습니다.</aside>
+</section>
+<section class="slide" data-kind="step" data-title="8단계. 화면 상태·화면 메모">
+  <p class="kicker">따라 하기 · 8 / 10</p>
+  <h2>빈 곳을 누르고 <b>화면 상태</b> · <b>화면 메모</b> 적기</h2>
+  <div class="body">
+    <div class="row mid">
+      <div class="screen shot" style="--h:16.00em;--w:8.00em"><img src="img/screen-props.png" alt="화면 칸의 상태와 메모"><span class="hl" style="left:3.1%;top:40.3%;width:93.8%;height:13.1%"></span><span class="hl" style="left:3.1%;top:68.1%;width:94.4%;height:18.4%"></span></div>
+      <div class="kv"><b>화면 상태</b><span>화면 전체가 비었거나 오류일 때</span><b>+ 메모</b><span>일반 설명</span><b>+ 반응형</b><span>모바일·태블릿에서 달라지는 점</span><b>+ 미정</b><span>아직 정하지 않은 것 -- 요청문에 따로 모임</span></div>
+    </div>
+    <div class="callout"><b>이렇게 보이면 성공</b> · 화면 메모 칸에 종류(메모·반응형·미정)와 글이 한 줄씩 쌓입니다</div>
+  </div>
+  <aside class="notes">여덟 번째 단계입니다. 작업판의 빈 곳을 누르면 오른쪽 칸이 화면 칸으로 바뀝니다. 화면 상태에서는 화면 전체가 비었거나 오류일 때를 적습니다. 화면 메모에는 모바일에서는 목록을 탭으로 바꾼다 같은 반응형 차이나, 아직 정하지 않은 미정 사항을 적습니다. 미정은 구현 요청문에 따로 모여서 AI 가 마음대로 정하지 않게 합니다.</aside>
+</section>
+<section class="slide" data-kind="step" data-title="9단계. 상태 화면으로 복제">
+  <p class="kicker">따라 하기 · 9 / 10</p>
+  <h2><span class="ui">상태 화면으로 복제</span> → 상태 모습을 따로 그리기</h2>
+  <div class="body">
+    <div class="row mid">
+      <div class="screen shot" style="--h:16.00em;--w:8.00em"><img src="img/screen-props.png" alt="상태 화면으로 복제 버튼"><span class="hl" style="left:3.1%;top:33.8%;width:46.9%;height:4.7%"></span></div>
+      <ol class="flow v"><li><b>상태 화면으로 복제</b><span>"(화면 이름) (상태)" 화면이 생김</span></li><li><b>복제한 화면 고치기</b><span>예: 빈 목록 + 안내 문구</span></li><li><b>상태 줄에서 연결</b><span>"상태 화면 없음" 칸에서 그 화면 고르기</span></li></ol>
+    </div>
+    <div class="callout"><b>이렇게 보이면 성공</b> · 왼쪽 화면 목록에 <b>(상태)</b> 가 붙은 화면이 하나 더 생깁니다</div>
+  </div>
+  <aside class="notes">아홉 번째 단계입니다. 상태 모습을 글로 적기 어려우면 그림으로 따로 그립니다. 화면 칸의 상태 화면으로 복제를 누르면 지금 화면이 통째로 복제됩니다. 복제한 화면을 빈 목록이나 오류 모습으로 고친 다음, 원래 화면의 상태 줄에서 상태 화면 없음이라고 적힌 칸을 눌러 그 화면을 고르면 서로 연결됩니다.</aside>
+</section>
+<section class="slide" data-kind="step" data-title="10단계. 검증 결과 보기">
+  <p class="kicker">따라 하기 · 10 / 10</p>
+  <h2>아래 <b>검증 결과</b>에서 차단·경고·안내 보기</h2>
+  <div class="body">
+    <div class="screen shot" style="--h:6.00em;--w:24.77em"><img src="img/issues.png" alt="검증 결과 칸"><span class="hl" style="left:10.9%;top:3.9%;width:30.9%;height:15.5%"></span><span class="hl" style="left:1.6%;top:21.9%;width:71.9%;height:15.5%"></span></div>
+    <table class="grid"><tr><th>표시</th><th>뜻</th><th>내보내기</th></tr><tr><td><span class="badge bad">✖ 차단</span></td><td>깨진 연결 · 꼭 필요한 대상이 없음</td><td><b>막힘</b> -- 꼭 고칩니다</td></tr><tr><td><span class="badge warn">⚠ 경고</span></td><td>결과·예외·검증 기준이 비었음 · 목록의 빈 상태 없음</td><td>됨 ("미정"으로)</td></tr><tr><td><span class="badge info">ℹ 안내</span></td><td>동작이 없는 버튼</td><td>됨</td></tr></table>
+    <div class="callout"><b>이렇게 보이면 성공</b> · 다 고치면 "문제가 없습니다." -- 오른쪽 <span class="ui">접기 ▾</span> 로 칸을 접습니다</div>
+  </div>
+  <aside class="notes">열 번째 단계입니다. 화면 맨 아래 검증 결과에는 차단, 경고, 안내 숫자와 줄 목록이 나옵니다. 차단은 깨진 연결처럼 꼭 고쳐야 하는 것이고, 하나라도 있으면 내보내기가 막힙니다. 경고는 비어 있는 칸이라서 미정으로 내보내지고, 안내는 참고용입니다. 줄을 누르면 그 화면과 요소로 바로 가서 오른쪽에 해당 동작 칸이 열립니다.</aside>
+</section>
+<section class="slide" data-kind="data" data-title="알아 두면 좋은 점">
+  <p class="kicker">알아 두면 좋은 점</p>
+  <h2>빠짐없이, 확인할 수 있게</h2>
+  <div class="body">
+    <div class="compare">
+      <div class="good"><h3>이렇게 하면 좋아요</h3>버튼마다 동작 하나 이상<br>목록에는 <b>빈 화면</b> 상태<br>검증 기준은 확인할 수 있는 한 줄 (예: 새로고침해도 남는다)<br>모르는 것은 <b>미정</b> 메모로</div>
+      <div class="bad"><h3>조심하세요</h3>요소를 지우면 그 요소에서 <b>시작한</b> 동작·상태도 함께 지워짐<br>대상을 지우면 깨진 연결 -- 내보내기 차단<br><b>요구사항 메모</b> 칸은 적기만 할 뿐 실행되지 않음</div>
+    </div>
+  </div>
+  <aside class="notes">알아 두면 좋은 점입니다. 버튼마다 동작을 하나 이상 붙이고, 목록에는 빈 화면 상태를 적고, 검증 기준은 누구나 확인할 수 있는 한 줄로 적으면 좋습니다. 요소를 지우면 그 요소에서 시작한 동작과 상태도 함께 지워지고, 다른 동작의 대상이었다면 깨진 연결이 남습니다. 지우기 전에 한 번 더 확인하고, 실수했으면 컨트롤 Z 로 되돌리세요.</aside>
+</section>
+
+</body>
+</html>

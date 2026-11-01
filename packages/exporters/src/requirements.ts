@@ -74,7 +74,7 @@ export function buildRequirements(project: Project, opts: RequirementsOptions = 
     out.push('| id | 종류 | 이름 | 문구 | 역할 | 위치·크기 | 배치 의도 | 메모 |');
     out.push('|---|---|---|---|---|---|---|---|');
     const row = (e: SketchElement, depth: number) =>
-      `| ${'↳ '.repeat(depth)}\`${e.id}\` | ${ELEMENT_LABELS[e.type]} | ${mdCell(e.name)} | ${e.text?.trim() ? mdCell(e.text) : '-'} | ${mdCell(e.semanticRole)} | ${e.x},${e.y} ${e.width}×${e.height} | ${e.props.layoutIntent?.trim() ? mdCell(e.props.layoutIntent) : '-'} | ${e.notes.trim() ? mdCell(e.notes) : '-'}${e.props.dataBinding ? ` · 데이터: ${mdCell(e.props.dataBinding)}` : ''} |`;
+      `| ${'↳ '.repeat(depth)}\`${e.id}\` | ${ELEMENT_LABELS[e.type]} | ${mdCell(e.name)} | ${e.text?.trim() ? mdCell(e.text) : '-'} | ${e.semanticRole.trim() ? mdCell(e.semanticRole) : '-'} | ${e.x},${e.y} ${e.width}×${e.height} | ${e.props.layoutIntent?.trim() ? mdCell(e.props.layoutIntent) : '-'} | ${e.notes.trim() ? mdCell(e.notes) : '-'}${e.props.dataBinding ? ` · 데이터: ${mdCell(e.props.dataBinding)}` : ''} |`;
     const walk = (e: SketchElement, depth: number) => {
       out.push(row(e, depth));
       for (const k of els.filter((x) => x.parentId === e.id)) walk(k, depth + 1);

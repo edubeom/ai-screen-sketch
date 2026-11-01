@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI 화면 스케치 사용설명서</title>
+<link rel="stylesheet" href="assets/manual.css">
+<style>
+/* 실제 화면 캡처 + 누르는 곳 강조(.hl) */
+.slide .shot { position: relative; width: fit-content; max-width: 100%; margin: 0 auto; border-color: var(--line); border-radius: .5em; }
+.slide .shot { flex: 0 0 auto; }
+.slide .row > .shot { flex: 0 0 auto; }
+.slide .shot img { display: block; height: var(--h); width: var(--w); max-width: none; }
+.slide .shot .hl { position: absolute; display: block; border-radius: .25em; outline-offset: .05em; }
+.slide .flow.v { gap: 1em; }
+.slide .flow.v > li { padding: .4em .9em .4em 2.9em; gap: .1em; }
+.slide .flow.v > li:not(:last-child)::after { bottom: -1.1em; font-size: .8em; }
+.slide .row.mid > .flow.v, .slide .row.mid > .kv, .slide .row.mid > table { flex: 1; }
+.slide .tag { display: inline-block; background: var(--warn); color: #fff; border-radius: .3em; padding: 0 .4em; font-size: .8em; font-weight: 700; }
+.slide .pick { display: inline-block; position: relative; width: .8em; height: .8em; border: .13em solid currentColor; border-radius: 50%; vertical-align: -.05em; margin: 0 .1em; }
+.slide .pick::before, .slide .pick::after { content: ""; position: absolute; background: currentColor; }
+.slide .pick::before { left: 50%; top: -.35em; bottom: -.35em; width: .12em; transform: translateX(-50%); }
+.slide .pick::after { top: 50%; left: -.35em; right: -.35em; height: .12em; transform: translateY(-50%); }
+.slide .card > i { color: var(--accent); }
+.slide .row.mid { align-items: center; }
+.slide .tight .item { padding: .2em .2em; }
+.slide .cover-mark { font-size: 3.4em; line-height: 1; letter-spacing: .1em; color: #c7e0cf; }
+</style>
+<script defer src="assets/manual.js"></script>
+</head>
+<body data-manual="AI 화면 스케치 사용설명서" data-index="index.html"
+      data-chapters="index.html|처음;sketch.html|그리기·필기;interaction.html|동작·상태·검증;export.html|내보내기·가져오기">
+
+<section class="slide" data-kind="cover" data-title="AI 화면 스케치 사용설명서">
+  <div class="body">
+    <div class="cover-mark">▭ ✎ ↗</div>
+    <h1>AI 화면 스케치 사용설명서</h1>
+    <p class="lead">앱 화면을 그리고, 누르면 무엇이 되는지 적어서, AI 개발자에게 넘길 설계 묶음을 만듭니다</p>
+  </div>
+  <aside class="notes">AI 화면 스케치 사용설명서입니다. 이 도구는 만들고 싶은 앱의 화면을 상자와 글, 손글씨로 그리고, 버튼을 누르면 무엇이 되는지를 함께 적어 두는 곳입니다. 다 그리면 그림과 설명을 한 파일로 묶어 AI 개발자에게 그대로 건넬 수 있습니다. 이 설명서는 처음 여는 법부터 내보내기까지 순서대로 보여 드립니다.</aside>
+</section>
+<section class="slide" data-kind="concept" data-title="화면 둘러보기">
+  <p class="kicker">한눈에 보기</p>
+  <h2>다섯 부분으로 된 한 화면</h2>
+  <div class="body">
+    <div class="row mid">
+      <div class="screen shot" style="--h:14.38em;--w:23.00em"><img src="img/app-example.png" alt="예시 프로젝트를 연 전체 화면"></div>
+      <div class="kv"><b>위 막대</b><span>프로젝트 · 도구(선택·펜·지우개·동작 연결) · 확대 · 내보내기</span><b>왼쪽</b><span>화면 목록 · 요소 · 묶음 프리셋 · 단축키</span><b>가운데</b><span>작업판 -- 여기에 그립니다</span><b>오른쪽</b><span>고른 것의 이름·문구·동작·상태</span><b>아래</b><span>검증 결과 -- 빠진 것 알림</span></div>
+    </div>
+  </div>
+  <aside class="notes">화면은 다섯 부분으로 나뉩니다. 위 막대에는 프로젝트 메뉴와 도구, 확대 버튼, 내보내기 버튼이 있습니다. 왼쪽에서 화면과 요소를 고르고, 가운데 작업판에 그립니다. 오른쪽에는 지금 고른 것의 설명과 동작이 나오고, 맨 아래에는 빠진 것을 알려 주는 검증 결과가 있습니다.</aside>
+</section>
+<section class="slide" data-kind="concept" data-title="한눈에 보기">
+  <p class="kicker">한눈에 보기</p>
+  <h2>그리고 → 적고 → 확인하고 → 내보냅니다</h2>
+  <div class="body">
+    <ol class="flow"><li><b>화면 만들기</b><span>데스크톱·태블릿·모바일 크기</span></li><li><b>그리기</b><span>상자·글·버튼, 펜 필기</span></li><li class="on"><b>동작 적기</b><span>누르면 → 무엇이 되나</span></li><li><b>검증 결과 보기</b><span>빠진 칸·깨진 연결</span></li><li><b>내보내기</b><span>ZIP 하나로 AI 에게</span></li></ol>
+    <div class="callout">설치·회원 가입·서버 없이 <b>브라우저 하나</b>로 씁니다. 적은 내용은 저절로 저장됩니다</div>
+  </div>
+  <aside class="notes">쓰는 순서는 다섯 단계입니다. 화면을 만들고, 상자와 글로 그리고, 버튼마다 누르면 무엇이 되는지 적습니다. 아래 검증 결과에서 빠진 것을 확인한 다음 내보내기를 누르면 AI 에게 줄 묶음 파일이 만들어집니다. 회원 가입이나 서버는 필요 없고 적은 내용은 저절로 저장됩니다.</aside>
+</section>
+<section class="slide" data-kind="start-step" data-title="시작하기 1. 앱 열기">
+  <p class="kicker">시작하기 · 1 / 5</p>
+  <h2>받은 주소를 브라우저로 엽니다 → 빈 작업판</h2>
+  <div class="body">
+    <div class="row mid">
+      <div class="screen shot" style="--h:14.38em;--w:23.00em"><img src="img/app-new.png" alt="처음 연 화면"><span class="hl" style="left:9.7%;top:0.9%;width:6.2%;height:3.1%"></span><span class="hl" style="left:25.4%;top:1.0%;width:9.9%;height:2.9%"></span><span class="hl" style="left:28.3%;top:85.8%;width:36.7%;height:3.8%"></span></div>
+      <ol class="flow v"><li><b>주소 열기</b><span>설치한 사람이 알려 준 주소</span></li><li><b>새 프로젝트</b><span>처음엔 저절로 하나 생김</span></li><li><b>빈 작업판</b><span>가운데 아래 안내 문구</span></li></ol>
+    </div>
+    <div class="callout"><b>이렇게 보이면 성공</b> · 위에 <b>새 프로젝트</b>, 옆에 초록색 <b>저장됨</b>, 가운데에 "왼쪽에서 요소를 끌어 놓거나 눌러서 추가하세요"</div>
+  </div>
+  <aside class="notes">시작하기 첫 번째 단계입니다. 이 도구를 설치해 준 사람이 알려 준 주소를 평소 쓰는 브라우저 주소창에 넣어 엽니다. 처음 열면 새 프로젝트가 저절로 하나 만들어지고, 가운데에 빈 작업판이 보입니다. 위쪽에 초록색 저장됨 표시가 보이면 제대로 열린 것입니다.</aside>
+</section>
+<section class="slide" data-kind="start-step" data-title="시작하기 2. 프로젝트 창 열기">
+  <p class="kicker">시작하기 · 2 / 5</p>
+  <h2><span class="ui">프로젝트 ▾</span> 를 누릅니다 → 프로젝트 창</h2>
+  <div class="body">
+    <div class="row mid">
+      <div class="screen shot" style="--h:10.42em;--w:23.00em"><img src="img/projects.png" alt="프로젝트 창"><span class="hl" style="left:2.8%;top:29.0%;width:65.9%;height:12.4%"></span><span class="hl" style="left:2.8%;top:41.7%;width:32.8%;height:12.4%"></span><span class="hl" style="left:2.8%;top:74.5%;width:94.4%;height:20.7%"></span></div>
+      <div class="kv"><b>새로 만들기</b><span>이름 · 첫 화면 크기 · 만들기</span><b>예시 열기</b><span>완성된 예시를 봅니다</span><b>저장된 프로젝트</b><span>눌러서 엽니다</span></div>
+    </div>
+    <div class="callout"><b>이렇게 보이면 성공</b> · 가운데에 <b>프로젝트</b> 창이 뜨고 "이 브라우저에 저장된 프로젝트" 목록이 보입니다</div>
+  </div>
+  <aside class="notes">두 번째 단계입니다. 화면 왼쪽 위의 프로젝트 버튼을 누르면 프로젝트 창이 뜹니다. 여기서 새 프로젝트를 만들거나, 완성된 예시를 열거나, 이 브라우저에 저장된 프로젝트를 골라 열 수 있습니다. 창을 닫으려면 오른쪽 위 엑스를 누르거나 Esc 를 누릅니다.</aside>
+</section>
+<section class="slide" data-kind="start-step" data-title="시작하기 3. 새 프로젝트 만들기">
+  <p class="kicker">시작하기 · 3 / 5</p>
+  <h2>이름을 적고 크기를 고른 뒤 <span class="ui">만들기</span></h2>
+  <div class="body">
+    <div class="row mid">
+      <div class="screen shot" style="--h:10.42em;--w:23.00em"><img src="img/projects.png" alt="새로 만들기 칸"><span class="hl" style="left:2.8%;top:29.7%;width:29.7%;height:11.0%"></span><span class="hl" style="left:33.1%;top:29.3%;width:25.5%;height:11.7%"></span><span class="hl" style="left:58.9%;top:29.0%;width:9.7%;height:12.4%"></span></div>
+      <ol class="flow v"><li><b>이름 적기</b><span>예: 우리 가게 예약 앱</span></li><li><b>첫 화면 크기</b><span>데스크톱 1440×900 · 태블릿 1024×768 · 모바일 390×844</span></li><li><b>만들기</b><span>빈 작업판으로 바뀜</span></li></ol>
+    </div>
+    <div class="callout"><b>이렇게 보이면 성공</b> · 위쪽 이름 칸에 적은 이름이 보이고, 왼쪽 화면 목록에 <b>1</b> 번 화면이 생깁니다</div>
+  </div>
+  <aside class="notes">세 번째 단계입니다. 새로 만들기 칸에 프로젝트 이름을 적고, 첫 화면 크기를 데스크톱, 태블릿, 모바일 중에서 고릅니다. 만들기를 누르면 창이 닫히고 빈 작업판이 열립니다. 이름은 나중에 위쪽 이름 칸에서 언제든 바꿀 수 있습니다.</aside>
+</section>
+<section class="slide" data-kind="start-step" data-title="시작하기 4. 예시 열어 보기">
+  <p class="kicker">시작하기 · 4 / 5</p>
+  <h2>처음이라면 <span class="ui">예시 열기: AHNDA 할 일 및 일정</span></h2>
+  <div class="body">
+    <div class="row mid">
+      <div class="screen shot" style="--h:8.00em;--w:17.66em"><img src="img/projects.png" alt="예시 열기 버튼"><span class="hl" style="left:2.8%;top:41.7%;width:32.8%;height:12.4%"></span></div>
+      <div class="screen shot" style="--h:12.00em;--w:19.20em"><img src="img/app-example.png" alt="예시를 연 화면"><span class="hl" style="left:17.9%;top:15.1%;width:57.2%;height:57.6%"></span></div>
+    </div>
+    <div class="callout"><b>이렇게 보이면 성공</b> · 할 일 목록과 달력이 그려진 화면 2개, 보라색 동작 화살표, 아래에 경고·안내 몇 개가 보입니다</div>
+  </div>
+  <aside class="notes">네 번째 단계입니다. 처음 써 본다면 프로젝트 창에서 예시 열기를 눌러 보세요. 할 일과 일정을 다루는 앱 예시가 열립니다. 화면 두 개와 버튼마다 붙은 동작, 상태, 메모가 모두 들어 있어서 무엇을 어떻게 적으면 되는지 한눈에 볼 수 있습니다. 예시를 고쳐도 다시 예시 열기로 처음 상태로 되돌릴 수 있습니다.</aside>
+</section>
+<section class="slide" data-kind="start-step" data-title="시작하기 5. 화면 더하기">
+  <p class="kicker">시작하기 · 5 / 5</p>
+  <h2>크기를 고르고 <span class="ui">+ 화면</span> → 목록에 새 화면</h2>
+  <div class="body">
+    <div class="row mid">
+      <div class="screen shot" style="--h:12.00em;--w:13.96em"><img src="img/screens-add.png" alt="화면 목록과 + 화면 버튼"><span class="hl" style="left:0.5%;top:84.2%;width:69.3%;height:15.8%"></span><span class="hl" style="left:71.9%;top:84.2%;width:28.1%;height:15.8%"></span><span class="hl" style="left:3.0%;top:39.8%;width:96.5%;height:38.6%"></span></div>
+      <div class="kv"><b>↑ ↓</b><span>화면 순서 바꾸기</span><b>복제</b><span>같은 화면을 하나 더 (상태 화면용)</span><b>✕</b><span>화면 지우기 (실행 취소 가능)</span><b>화면 이름</b><span>오른쪽 칸에서 고칩니다</span></div>
+    </div>
+    <div class="callout"><b>이렇게 보이면 성공</b> · 왼쪽 목록에 <b>화면 2 · 390×844</b> 처럼 번호와 크기가 붙은 새 화면이 생기고, 작업판이 그 화면으로 바뀝니다</div>
+  </div>
+  <aside class="notes">다섯 번째 단계입니다. 왼쪽 화면 칸 아래에서 크기를 고르고 더하기 화면 버튼을 누르면 새 화면이 목록에 추가됩니다. 목록에서 화면 이름을 누르면 그 화면으로 바뀌고, 고른 화면에는 순서 바꾸기, 복제, 지우기 버튼이 나옵니다. 데스크톱과 모바일처럼 크기가 다른 화면은 따로 하나씩 만들어 그립니다.</aside>
+</section>
+<section class="slide" data-kind="concept" data-title="저절로 저장됩니다">
+  <p class="kicker">알아 두기</p>
+  <h2>고치면 바로 저장 -- 위쪽 표시를 봅니다</h2>
+  <div class="body">
+    <div class="screen shot" style="--h:2.60em;--w:28.71em"><img src="img/topbar-save.png" alt="위쪽 저장 표시"><span class="hl" style="left:71.3%;top:17.4%;width:28.7%;height:65.2%"></span></div>
+    <table class="grid"><tr><th>표시</th><th>뜻</th><th>할 일</th></tr><tr><td><span class="badge">변경됨</span> <span class="badge">저장 중…</span></td><td>방금 고친 것을 저장하는 중</td><td>잠깐 기다립니다</td></tr><tr><td><span class="badge ok">저장됨</span></td><td>이 브라우저에 저장 끝</td><td>그대로 닫아도 됩니다</td></tr><tr><td><span class="badge bad">저장 실패</span></td><td>저장하지 못함</td><td><span class="ui">다시 저장</span> 을 누르고, 안 되면 <b>내보내기</b>로 파일을 받아 둡니다</td></tr></table>
+  </div>
+  <aside class="notes">저장 버튼을 따로 누를 필요는 없습니다. 무언가 고치면 위쪽 표시가 저장 중으로 바뀌었다가 곧 초록색 저장됨으로 바뀝니다. 만약 빨간 저장 실패가 보이면 옆에 생기는 다시 저장 버튼을 누르세요. 그래도 안 되면 내보내기로 파일을 받아 두어야 그동안 그린 것을 잃지 않습니다.</aside>
+</section>
+<section class="slide" data-kind="concept" data-title="데이터는 어디에">
+  <p class="kicker">데이터는 어디에</p>
+  <h2>내 설계는 이 브라우저 안에만 있습니다</h2>
+  <div class="body">
+    <div class="row">
+      <div class="compare" style="grid-template-columns:1fr"><div class="good"><h3>저장되는 곳: 이 기기의 이 브라우저</h3>새로고침해도, 컴퓨터를 껐다 켜도 그대로 남습니다. 인터넷으로 보내지 않습니다</div><div class="bad"><h3>보이지 않는 곳</h3>다른 컴퓨터 · 휴대폰 · 다른 브라우저 · 시크릿 창</div></div>
+      <ol class="flow v"><li><b>내보내기</b><span>ZIP 이나 JSON 파일로 받기</span></li><li><b>파일 보관</b><span>내 폴더·USB·클라우드</span></li><li><b>가져오기</b><span>다른 기기에서 다시 열기</span></li></ol>
+    </div>
+    <div class="callout bad">브라우저의 <b>사이트 데이터·방문 기록 삭제</b>를 하거나 프로젝트 목록에서 <b>지우기</b>를 누르면 <b>되돌릴 수 없습니다</b>. 중요한 설계는 먼저 내보내기로 백업하세요</div>
+  </div>
+  <aside class="notes">그린 내용은 지금 쓰는 기기의 지금 쓰는 브라우저 안에만 저장됩니다. 인터넷으로 보내지 않기 때문에 다른 컴퓨터나 휴대폰, 다른 브라우저에서는 보이지 않습니다. 브라우저의 사이트 데이터를 지우거나 프로젝트 목록에서 지우기를 누르면 되돌릴 수 없으니, 중요한 설계는 내보내기로 파일을 받아 보관하세요. 다른 기기에서는 그 파일을 가져오기로 다시 열면 됩니다.</aside>
+</section>
+<section class="slide" data-kind="chapters" data-title="기능 목록">
+  <p class="kicker">기능 목록</p>
+  <h2>보고 싶은 기능을 누르세요</h2>
+  <div class="body">
+    <div class="cards"><a class="card" href="sketch.html"><i>▭</i><b>그리기·필기</b><span>요소 넣기 · 옮기기 · 묶기 · 정렬 · 확대 · 펜과 지우개 (10단계)</span></a><a class="card" href="interaction.html"><i>↗</i><b>동작·상태·검증</b><span>동작 연결 · 칸 채우기 · 깨진 연결 · 상태 · 화면 메모 · 검증 결과 (10단계)</span></a><a class="card" href="export.html"><i>▤</i><b>내보내기·가져오기</b><span>전달 방식 · 그림 옵션 · ZIP 받기 · 백업 · 다시 열기 (8단계)</span></a></div>
+  </div>
+  <aside class="notes">기능별 설명서입니다. 그리기와 필기 장에서는 화면에 요소를 넣고 다듬는 법을, 동작과 상태와 검증 장에서는 버튼마다 무엇이 되는지 적는 법을 봅니다. 마지막 내보내기와 가져오기 장에서는 AI 에게 줄 묶음 파일을 만들고 백업하는 법을 다룹니다. 보고 싶은 기능을 누르세요.</aside>
+</section>
+<section class="slide" data-kind="changes" data-title="바뀐 점">
+  <p class="kicker">바뀐 점</p>
+  <h2>최근에 바뀐 것 (최신이 위)</h2>
+  <div class="body">
+    <table class="grid"><tr><th>날짜</th><th>무엇이 바뀌었나</th></tr><tr><td>2026-11-02</td><td>처음 만듦 -- 시작하기 · 데이터는 어디에 · 그리기·필기 · 동작·상태·검증 · 내보내기·가져오기</td></tr></table>
+  </div>
+  <aside class="notes">바뀐 점입니다. 이 설명서는 2026년 11월 2일에 처음 만들었습니다. 시작하기와 데이터 저장 안내, 그리기와 필기, 동작과 상태와 검증, 내보내기와 가져오기 장이 들어 있습니다. 앞으로 사용 방법이 바뀌면 이 표의 맨 위에 한 줄씩 더합니다.</aside>
+</section>
+
+</body>
+</html>

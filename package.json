@@ -3,7 +3,6 @@
   "private": true,
   "version": "0.1.0",
   "description": "화면을 그리고 동작을 정의해 AI 개발자에게 전달하는 단독 실행 스케치 도구",
-  "license": "MIT",
   "type": "module",
   "workspaces": [
     "apps/*",

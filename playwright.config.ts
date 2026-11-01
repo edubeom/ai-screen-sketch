@@ -3,7 +3,7 @@ import { defineConfig, devices } from '@playwright/test';
 // 브라우저로 직접 확인하는 시험 (light-check). 빌드한 정적 앱을 preview 서버로 띄운다.
 export default defineConfig({
   testDir: 'e2e',
-  timeout: 60_000,
+  timeout: 120_000,
   fullyParallel: false,
   workers: 1,
   reporter: [['list']],

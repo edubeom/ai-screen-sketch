@@ -1,0 +1,97 @@
+# AI 화면 스케치 (ai-screen-sketch)
+
+화면을 사각형·텍스트·필기·메모로 그리고, 요소마다 **동작(트리거 → 조건 → 결과 → 실패 상태 → 검증 기준)** 을 붙여
+AI 개발자에게 넘길 **설계 묶음(ZIP)** 을 만드는 단독 실행 웹 도구입니다.
+그림은 위치를, 동작 명세는 "누르면/끌어 놓으면 무엇이 되는지"를 설명합니다 -- AI 가 이름이나 손글씨만 보고 짐작하지 않게.
+
+- 서버·로그인·Git·Python 없이 브라우저만으로 동작합니다 (단독 모드).
+- 프로젝트는 브라우저(IndexedDB)에 자동 저장되고, ZIP/JSON 으로 내보내고 다시 가져올 수 있습니다.
+- 같은 설계를 [dev-process-light](https://github.com/edubeom/dev-process-light) 작업 카드 초안이나 전문판 전달 초안으로도 내보낼 수 있습니다.
+
+기준 문서: 기획서 v1.1 (2026-10-28) -- 이번 버전은 기획서 6장의 **단계 1(PC 스케치)·2(의도 전달)** 프로토타입입니다.
+
+## 실행
+
+Node.js 22 이상이 필요합니다.
+
+```bash
+npm install
+npm run dev        # http://localhost:5173
+```
+
+정적 파일로 빌드해 아무 곳에서나 열 수 있습니다 (서버 불필요):
+
+```bash
+npm run build      # apps/editor/dist
+npm run preview    # http://localhost:4173
+```
+
+처음 열면 빈 프로젝트가 만들어집니다. **프로젝트 ▾ → 예시 열기: AHNDA 할 일 및 일정** 으로 기획서의 인수 사례를 바로 볼 수 있습니다.
+사용 방법은 [`manual/index.html`](manual/index.html) (브라우저로 열기 · `P` 발표 · `N` 대본).
+
+## 할 수 있는 것
+
+| 영역 | 기능 |
+|---|---|
+| 화면 | 여러 화면, 데스크톱 1440×900 · 태블릿 1024×768 · 모바일 390×844 · 직접 입력, 순서 변경, 복제(상태 화면) |
+| 요소 | 영역 · 텍스트 · 버튼 · 입력창 · 목록 · 카드 · 이미지(PNG/JPEG/WebP/GIF 업로드) · 메모 · 연결선, 묶음 프리셋(캘린더 · 작업 목록 · 상세 패널) |
+| 편집 | 선택 · 여러 개 선택(Shift, 영역 끌기) · 이동 · 크기 조절 · 복사/붙여넣기 · 복제 · 지우기 · 앞뒤 순서 · 묶기/풀기 · 잠금 · 정렬 · 격자 맞춤 · 실행 취소/다시 실행 |
+| 필기 | 펜(색·굵기, 펜 필압) · 지우개. 확대·축소와 상관없이 화면 좌표로 저장 |
+| 명세 | 동작(클릭 · 더블클릭 · 입력 · 선택 변경 · 드래그 앤 드롭 → 화면 이동 · 패널 열기 · 목록 펼치기 · 값 변경 · 항목 생성/삭제 · 외부 링크 · 사용자 정의), 사전 조건 · 결과 · 데이터 변경 · 예외 · 검증 기준, 상태(정상 · 빈 화면 · 불러오는 중 · 오류 · 비활성), 화면 메모(메모 · 반응형 · 미정), 역할(semanticRole) · 배치 의도 · 데이터 연결 |
+| 검증 | 깨진 연결 · 필수 대상 없음 = 내보내기 차단 / 빈 결과 · 예외 · 검증 기준 = 경고("미정"으로 내보냄) / 빈 상태 없는 목록 = 경고 |
+| 저장 | IndexedDB 자동 저장(저장 중 · 저장됨 · 저장 실패 표시), 프로젝트 목록, 실행 취소 히스토리와 저장 revision 분리 |
+| 내보내기 | ZIP: `project.json` · `screens/NN-<id>.png` · `assets/` · `requirements.md` · `validation-report.json` · `manifest.json`(파일별 크기·sha256) + profile 전달물 |
+| 가져오기 | ZIP/JSON. 스키마 · 참조 · 좌표 범위 · 버전 검사, 파일 수 · 크기 제한, 경로 탈출 차단, 해시 확인. 기본은 새 프로젝트 |
+
+단축키: `V` 선택 · `P` 펜 · `E` 지우개 · `L` 동작 연결 · `Delete` · 방향키(Shift 10px) · `Ctrl/⌘+Z`, `Ctrl/⌘+Shift+Z` · `Ctrl/⌘+C/V/X/D` · `Ctrl/⌘+G`(Shift 풀기) · 스페이스+끌기 · `Ctrl/⌘+휠`
+
+## 설계 묶음(ZIP)과 개발 흐름 연결
+
+ZIP 을 풀면 그대로 설계 폴더가 됩니다. dev-process-light 프로젝트라면 `design/sketch/<project-id>/` 에 풀어 두는 것을 제안합니다.
+
+| profile | 추가 파일 | 비고 |
+|---|---|---|
+| 단독 | `traceability.json` | 프레임워크 없이 AI 에게 그대로 전달 |
+| dev-process-light | `exports/dev-light/task-card.md`, `exports/dev-light/traceability.json` | NOW.md 작업 카드 초안 · light-check 검증표 · FEATURES/NAMES 제안. **기존 기록을 덮지 않는 초안** |
+| 전문판 (전달 초안) | `exports/dev-framework/task-draft.md`, `exports/dev-framework/traceability.json` | task-new · accept · verify · finish 개념 대응. 전문판 내부 계약은 미확인 -- 완전 호환 아님 |
+
+`traceability.json` 은 공통 교환 계약입니다: `integration.profile/adapterVersion`, `hostProjectId/hostTaskId`, `designId/revision/digest`,
+`featureRefs`(미확정) · `termRefs`(제안) · `acceptanceRefs`(동작 id → `AC-<동작 id>`) · `evidenceRefs`(모두 unverified) · `approval`(초안).
+설계를 고치면 새 revision 이 되고, 이전 revision 의 승인·증거는 넘어오지 않습니다.
+
+## 구조
+
+```
+apps/editor                     편집기 (React + Vite, 정적 웹앱)
+packages/core                   설계 데이터 계약 · 편집 명령 · 가져오기/명세 검사
+packages/exporters              요소 모양(화면·PNG 공용) · SVG · 구현 요청문 · ZIP 내보내기/가져오기 · traceability
+packages/storage                IndexedDB 저장소
+packages/adapters/standalone    단독 profile
+packages/adapters/dev-light     dev-process-light profile
+packages/adapters/dev-framework 전문판 전달 초안 profile
+examples/ahnda-planner          인수 사례 (node examples/ahnda-planner/build.ts 로 다시 만듦)
+e2e                             브라우저 시험 (Playwright)
+dev-notes                       개발 기록 (dev-process-light)
+manual                          사용설명서 (HTML 슬라이드)
+```
+
+## 시험
+
+```bash
+npm run typecheck
+npm test            # 단위 시험 (Vitest)
+npm run e2e         # 브라우저 시험 (Playwright) -- 빌드 후 preview 서버로 확인
+npm run check       # 위 전부 + 빌드
+```
+
+브라우저 시험이 처음이면 Playwright 브라우저와 시스템 라이브러리가 필요합니다:
+
+```bash
+npx playwright install --with-deps chromium
+```
+
+## 아직 하지 않은 것 (기획서 후속 단계)
+
+- 아이패드 · 노트북 동기화(서버 저장, QR, 단일 편집권), 손바닥 오입력 실기기 검증
+- 전문판(dev-process-framework) 실제 계약 확인 후 어댑터 확정, 포털 생성기 연결, AHNDA 작업 연결
+- 업로드 SVG, 외부 이미지 URL, 필기 인식, 자동 코드 생성

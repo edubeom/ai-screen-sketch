@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>그리기·필기 — AI 화면 스케치 사용설명서</title>
+<link rel="stylesheet" href="assets/manual.css">
+<style>
+/* 실제 화면 캡처 + 누르는 곳 강조(.hl) */
+.slide .shot { position: relative; width: fit-content; max-width: 100%; margin: 0 auto; border-color: var(--line); border-radius: .5em; }
+.slide .shot { flex: 0 0 auto; }
+.slide .row > .shot { flex: 0 0 auto; }
+.slide .shot img { display: block; height: var(--h); width: var(--w); max-width: none; }
+.slide .shot .hl { position: absolute; display: block; border-radius: .25em; outline-offset: .05em; }
+.slide .flow.v { gap: 1em; }
+.slide .flow.v > li { padding: .4em .9em .4em 2.9em; gap: .1em; }
+.slide .flow.v > li:not(:last-child)::after { bottom: -1.1em; font-size: .8em; }
+.slide .row.mid > .flow.v, .slide .row.mid > .kv, .slide .row.mid > table { flex: 1; }
+.slide .tag { display: inline-block; background: var(--warn); color: #fff; border-radius: .3em; padding: 0 .4em; font-size: .8em; font-weight: 700; }
+.slide .pick { display: inline-block; position: relative; width: .8em; height: .8em; border: .13em solid currentColor; border-radius: 50%; vertical-align: -.05em; margin: 0 .1em; }
+.slide .pick::before, .slide .pick::after { content: ""; position: absolute; background: currentColor; }
+.slide .pick::before { left: 50%; top: -.35em; bottom: -.35em; width: .12em; transform: translateX(-50%); }
+.slide .pick::after { top: 50%; left: -.35em; right: -.35em; height: .12em; transform: translateY(-50%); }
+.slide .card > i { color: var(--accent); }
+.slide .row.mid { align-items: center; }
+.slide .tight .item { padding: .2em .2em; }
+.slide .cover-mark { font-size: 3.4em; line-height: 1; letter-spacing: .1em; color: #c7e0cf; }
+</style>
+<script defer src="assets/manual.js"></script>
+</head>
+<body data-manual="AI 화면 스케치 사용설명서" data-index="index.html"
+      data-chapters="index.html|처음;sketch.html|그리기·필기;interaction.html|동작·상태·검증;export.html|내보내기·가져오기">
+
+<section class="slide" data-kind="cover" data-title="그리기·필기">
+  <div class="body">
+    <div class="cover-mark">▭ T ✎</div>
+    <h1>그리기 · 필기</h1>
+    <p class="lead">상자·글·버튼을 놓고 다듬고, 펜으로 손글씨를 더합니다</p>
+  </div>
+  <aside class="notes">그리기와 필기 장입니다. 왼쪽 요소 칸에서 영역, 텍스트, 버튼 같은 요소를 작업판에 놓고, 옮기고, 크기를 바꾸고, 줄을 맞추는 법을 봅니다. 마지막에는 펜과 지우개로 손글씨 메모를 더하는 법도 다룹니다. 그림은 위치를 보여 주는 용도라서 예쁘게 그리지 않아도 괜찮습니다.</aside>
+</section>
+<section class="slide" data-kind="overview" data-title="한눈에 보기">
+  <p class="kicker">한눈에 보기</p>
+  <h2>놓고 → 다듬고 → 정리하고 → 필기</h2>
+  <div class="body">
+    <ol class="flow"><li><b>요소 놓기</b><span>누르거나 끌어 놓기</span></li><li class="on"><b>고르고 다듬기</b><span>옮기기 · 크기 · 글</span></li><li><b>정리하기</b><span>정렬 · 묶기 · 잠금</span></li><li><b>보기 조절</b><span>확대 · 이동 · 격자</span></li><li><b>필기</b><span>펜 · 지우개</span></li></ol>
+    <div class="callout">잘못했으면 <kbd>Ctrl</kbd>+<kbd>Z</kbd> (맥은 <kbd>⌘</kbd>+<kbd>Z</kbd>) 로 되돌립니다. 위쪽 <span class="ui">↶</span> <span class="ui">↷</span> 버튼도 같습니다</div>
+  </div>
+  <aside class="notes">그리기는 다섯 묶음으로 이루어집니다. 요소를 놓고, 고르고 다듬고, 줄 맞춤과 묶기로 정리하고, 확대와 이동으로 보기를 조절하고, 펜으로 필기합니다. 어느 단계든 잘못했으면 컨트롤 Z 로 되돌릴 수 있고, 위쪽 화살표 버튼으로도 실행 취소와 다시 실행을 할 수 있습니다.</aside>
+</section>
+<section class="slide" data-kind="step" data-title="1단계. 요소 놓기">
+  <p class="kicker">따라 하기 · 1 / 10</p>
+  <h2>왼쪽 <b>요소</b>를 누르거나 작업판으로 끌어 놓습니다</h2>
+  <div class="body">
+    <div class="row mid">
+      <div class="screen shot" style="--h:14.00em;--w:8.90em"><img src="img/palette.png" alt="요소 칸"><span class="hl" style="left:0.0%;top:18.5%;width:49.2%;height:11.2%"></span></div>
+      <div class="kv"><b>영역</b><span>큰 구역 · 틀</span><b>텍스트 · 버튼 · 입력창</b><span>글, 누르는 곳, 적는 칸</span><b>목록 · 카드</b><span>여러 줄 · 한 덩어리</span><b>이미지</b><span>PNG·JPEG·WebP·GIF 파일 올리기</span><b>메모</b><span>노란 쪽지</span><b>연결선</b><span>그림용 화살표</span></div>
+    </div>
+    <div class="callout"><b>이렇게 보이면 성공</b> · 작업판에 상자가 생기고 <b>파란 테두리와 작은 네모 8개</b>로 골라져 있습니다</div>
+  </div>
+  <aside class="notes">첫 번째 단계입니다. 왼쪽 요소 칸에서 넣고 싶은 것을 한 번 누르면 지금 보이는 작업판 가운데에 생깁니다. 원하는 자리에 놓고 싶으면 버튼을 눌러 작업판까지 끌어 놓으세요. 이미지는 누르면 파일 고르는 창이 열리고, 이미지 파일을 작업판에 바로 끌어 놓아도 됩니다.</aside>
+</section>
+<section class="slide" data-kind="step" data-title="2단계. 묶음 프리셋">
+  <p class="kicker">따라 하기 · 2 / 10</p>
+  <h2><b>묶음 프리셋</b> -- 캘린더·작업 목록·상세 패널을 한 번에</h2>
+  <div class="body">
+    <div class="row mid">
+      <div class="screen shot" style="--h:14.00em;--w:8.90em"><img src="img/palette.png" alt="묶음 프리셋"><span class="hl" style="left:0.0%;top:78.0%;width:100.0%;height:23.0%"></span></div>
+      <ol class="flow v"><li><b>프리셋 누르기</b><span>여러 요소가 묶음으로 생김</span></li><li><b>더블클릭</b><span>묶음 안 요소를 고침</span></li><li><b>묶음 풀기</b><span>오른쪽 칸 버튼으로 낱개로</span></li></ol>
+    </div>
+    <div class="callout"><b>이렇게 보이면 성공</b> · 틀·제목·버튼이 함께 들어간 묶음이 한 덩어리로 골라집니다</div>
+  </div>
+  <aside class="notes">두 번째 단계입니다. 묶음 프리셋에는 캘린더, 작업 목록, 상세 패널이 있습니다. 누르면 틀과 제목, 버튼 같은 여러 요소가 한 묶음으로 한꺼번에 생깁니다. 묶음을 더블클릭하면 안쪽 요소를 하나씩 고칠 수 있고, 오른쪽 칸의 묶음 풀기를 누르면 낱개 요소로 나뉩니다.</aside>
+</section>
+<section class="slide" data-kind="step" data-title="3단계. 고르고 옮기고 크기 바꾸기">
+  <p class="kicker">따라 하기 · 3 / 10</p>
+  <h2>눌러서 고르고, 끌어 옮기고, 모서리 네모로 크기</h2>
+  <div class="body">
+    <div class="row mid">
+      <div class="screen shot" style="--h:11.00em;--w:21.00em"><img src="img/el-selected.png" alt="골라진 버튼"><span class="hl" style="left:8.6%;top:52.3%;width:31.0%;height:22.7%"></span></div>
+      <table class="grid"><tr><th>하고 싶은 것</th><th>방법</th></tr><tr><td>옮기기</td><td>요소를 끌기 · 방향키 1px · <kbd>Shift</kbd>+방향키 10px</td></tr><tr><td>크기</td><td>테두리의 작은 네모를 끌기</td></tr><tr><td>지우기</td><td><kbd>Delete</kbd> 또는 오른쪽 <span class="ui">지우기</span></td></tr><tr><td>복사</td><td><kbd>Ctrl</kbd>+<kbd>C</kbd>/<kbd>V</kbd> · 바로 복제 <kbd>Ctrl</kbd>+<kbd>D</kbd></td></tr></table>
+    </div>
+    <div class="callout"><b>이렇게 보이면 성공</b> · 끄는 동안 요소가 따라오고, 놓으면 그 자리에 남습니다 (격자를 켜 두면 8px 칸에 맞춰짐)</div>
+  </div>
+  <aside class="notes">세 번째 단계입니다. 요소를 한 번 누르면 파란 테두리로 골라집니다. 끌면 옮겨지고, 테두리의 작은 네모를 끌면 크기가 바뀝니다. 방향키로 1픽셀씩, 시프트를 누른 채 방향키로 10픽셀씩 옮길 수도 있습니다. 필요 없는 요소는 Delete 키로 지우고, 실수했으면 컨트롤 Z 로 되돌립니다.</aside>
+</section>
+<section class="slide" data-kind="step" data-title="4단계. 글 고치기">
+  <p class="kicker">따라 하기 · 4 / 10</p>
+  <h2><b>더블클릭</b>하거나 오른쪽 <b>문구</b> 칸에 적습니다</h2>
+  <div class="body">
+    <div class="row mid">
+      <div class="screen shot" style="--h:16.00em;--w:10.89em"><img src="img/inspector-element.png" alt="오른쪽 칸의 이름과 문구"><span class="hl" style="left:3.1%;top:7.7%;width:93.8%;height:11.1%"></span><span class="hl" style="left:3.1%;top:19.1%;width:93.8%;height:13.6%"></span></div>
+      <ol class="flow v"><li><b>이름</b><span>목록과 검증 결과에 보이는 이름 (예: 저장 버튼)</span></li><li><b>문구</b><span>화면에 실제로 보이는 글</span></li><li><b>메모</b><span>그 요소에 대한 짧은 설명</span></li></ol>
+    </div>
+    <div class="callout"><b>이렇게 보이면 성공</b> · 작업판의 요소 글자가 적은 대로 바로 바뀝니다</div>
+  </div>
+  <aside class="notes">네 번째 단계입니다. 작업판에서 요소를 더블클릭하면 그 자리에서 글을 고칠 수 있습니다. 오른쪽 칸의 문구에 적어도 똑같습니다. 이름은 화면에 보이지 않고 목록과 검증 결과에서 그 요소를 부를 때 쓰니, 저장 버튼처럼 알아보기 쉽게 지어 주세요. 실제 개인정보 대신 예시 값을 넣는 것이 좋습니다.</aside>
+</section>
+<section class="slide" data-kind="step" data-title="5단계. 묶음 안으로 들어가기">
+  <p class="kicker">따라 하기 · 5 / 10</p>
+  <h2>묶음을 <b>더블클릭</b> → 안쪽 요소가 골라집니다</h2>
+  <div class="body">
+    <div class="row mid">
+      <div class="screen shot" style="--h:7.85em;--w:23.00em"><img src="img/group-entered.png" alt="묶음 안의 카드가 골라진 모습"><span class="hl" style="left:8.2%;top:36.7%;width:83.6%;height:17.7%"></span></div>
+      <ol class="flow v"><li><b>한 번 누르기</b><span>묶음 전체가 골라짐</span></li><li><b>더블클릭</b><span>누른 안쪽 요소가 골라짐 (점선 = 묶음)</span></li><li><b>Esc</b><span>묶음 밖으로 나오기</span></li></ol>
+    </div>
+    <div class="callout"><b>이렇게 보이면 성공</b> · 묶음 둘레에 보라 점선이 생기고, 누른 카드 하나만 파란 테두리로 골라집니다</div>
+  </div>
+  <aside class="notes">다섯 번째 단계입니다. 묶음은 한 번 누르면 통째로 골라집니다. 안쪽의 카드나 버튼 하나만 고치고 싶으면 그 위를 더블클릭하세요. 묶음 둘레에 점선이 생기고 누른 요소만 골라집니다. 다 고쳤으면 Esc 를 눌러 묶음 밖으로 나옵니다.</aside>
+</section>
+<section class="slide" data-kind="step" data-title="6단계. 여러 개 정렬·묶기">
+  <p class="kicker">따라 하기 · 6 / 10</p>
+  <h2>여러 개 골라 줄 맞추고 <span class="ui">묶기</span></h2>
+  <div class="body">
+    <div class="row mid">
+      <div class="screen shot" style="--h:10.00em;--w:18.29em"><img src="img/multi-select.png" alt="2개 선택 칸"><span class="hl" style="left:3.1%;top:37.7%;width:94.4%;height:18.3%"></span><span class="hl" style="left:3.1%;top:57.7%;width:13.8%;height:17.1%"></span></div>
+      <ol class="flow v"><li><b>여러 개 고르기</b><span>Shift+누르기 · 빈 곳에서 끌어 감싸기</span></li><li><b>정렬</b><span>왼쪽·가운데·오른쪽·위·중간·아래</span></li><li><b>묶기</b><span>Ctrl+G · 풀기 Ctrl+Shift+G</span></li></ol>
+    </div>
+    <div class="callout"><b>이렇게 보이면 성공</b> · 오른쪽 칸 제목이 <b>2개 선택</b> 으로 바뀌고, 정렬을 누르면 줄이 맞춰집니다</div>
+  </div>
+  <aside class="notes">여섯 번째 단계입니다. 시프트를 누른 채 요소를 차례로 누르거나, 빈 곳에서 끌어 사각형으로 감싸면 여러 개가 함께 골라집니다. 오른쪽 칸에 몇 개 선택이라는 제목과 함께 정렬 버튼이 나옵니다. 묶기를 누르면 하나의 묶음이 되어 함께 움직입니다.</aside>
+</section>
+<section class="slide" data-kind="step" data-title="7단계. 잠금·순서">
+  <p class="kicker">따라 하기 · 7 / 10</p>
+  <h2><span class="ui">잠금</span> 으로 고정, <span class="ui">맨 앞</span>·<span class="ui">맨 뒤</span> 로 겹침 순서</h2>
+  <div class="body">
+    <div class="row mid">
+      <div class="screen shot" style="--h:16.00em;--w:10.89em"><img src="img/inspector-element.png" alt="잠금과 순서 버튼"><span class="hl" style="left:3.1%;top:92.8%;width:86.2%;height:6.8%"></span></div>
+      <table class="grid"><tr><th>버튼</th><th>하는 일</th></tr><tr><td><span class="ui">잠금</span></td><td>실수로 움직이지 않게 고정 (다시 누르면 <b>잠금 풀기</b>)</td></tr><tr><td><span class="ui">맨 앞</span> <span class="ui">앞</span></td><td>다른 요소 위로</td></tr><tr><td><span class="ui">뒤</span> <span class="ui">맨 뒤</span></td><td>다른 요소 아래로 (배경 틀)</td></tr><tr><td><span class="ui">지우기</span></td><td>고른 요소 지우기</td></tr></table>
+    </div>
+    <div class="callout"><b>이렇게 보이면 성공</b> · 잠근 요소는 끌어도 움직이지 않고, 아래쪽 알림에 <b>잠금</b> 이 잠깐 보입니다</div>
+  </div>
+  <aside class="notes">일곱 번째 단계입니다. 요소를 하나 고르면 오른쪽 칸 아래쪽에 잠금과 순서 버튼이 있습니다. 배경 틀처럼 움직이면 안 되는 것은 잠금을 눌러 고정합니다. 요소가 겹쳐서 가려지면 맨 앞이나 맨 뒤로 겹침 순서를 바꿉니다. 잠금을 풀려면 같은 자리의 잠금 풀기 버튼을 누릅니다.</aside>
+</section>
+<section class="slide" data-kind="step" data-title="8단계. 확대·이동·격자">
+  <p class="kicker">따라 하기 · 8 / 10</p>
+  <h2><span class="ui">−</span> <span class="ui">+</span> <span class="ui">맞춤</span> 으로 보기, <span class="ui">격자</span> 로 칸 맞춤</h2>
+  <div class="body">
+    <div class="screen shot" style="--h:3.20em;--w:21.77em"><img src="img/zoom-bar.png" alt="확대 버튼과 격자"><span class="hl" style="left:1.6%;top:17.4%;width:58.5%;height:65.2%"></span><span class="hl" style="left:60.4%;top:19.6%;width:17.9%;height:60.9%"></span></div>
+    <table class="grid"><tr><th>하고 싶은 것</th><th>방법</th></tr><tr><td>확대·축소</td><td><kbd>Ctrl</kbd>+마우스 휠 · <span class="ui">−</span> <span class="ui">+</span> · 가운데 %를 누르면 100%</td></tr><tr><td>화면 전체 보기</td><td><span class="ui">맞춤</span> 또는 <kbd>Shift</kbd>+<kbd>1</kbd></td></tr><tr><td>작업판 옮겨 보기</td><td><kbd>스페이스</kbd>를 누른 채 끌기 · 마우스 휠</td></tr><tr><td>칸 맞춤 끄기·켜기</td><td><span class="ui">격자</span> 체크 (8px 칸)</td></tr></table>
+    <div class="callout"><b>이렇게 보이면 성공</b> · 가운데 숫자(예: 57%)가 바뀌고 화면 전체가 작업판 안에 들어옵니다</div>
+  </div>
+  <aside class="notes">여덟 번째 단계입니다. 컨트롤을 누른 채 마우스 휠을 굴리면 커서 자리를 중심으로 확대와 축소가 됩니다. 위쪽 빼기와 더하기 버튼, 맞춤 버튼으로도 됩니다. 스페이스바를 누른 채 끌면 작업판을 옮겨 볼 수 있습니다. 격자를 켜 두면 요소가 8픽셀 칸에 맞춰져서 줄 맞추기가 쉽습니다.</aside>
+</section>
+<section class="slide" data-kind="step" data-title="9단계. 펜으로 필기">
+  <p class="kicker">따라 하기 · 9 / 10</p>
+  <h2><span class="ui">펜</span> 을 누르고 작업판에 씁니다</h2>
+  <div class="body">
+    <div class="row mid">
+      <div><div class="screen shot" style="--h:3.60em;--w:23.95em"><img src="img/pen-bar.png" alt="펜 도구와 색·굵기"><span class="hl" style="left:16.3%;top:15.2%;width:13.1%;height:69.6%"></span><span class="hl" style="left:71.2%;top:15.2%;width:28.1%;height:69.6%"></span></div><p class="muted" style="margin-top:.6em">단축키 <kbd>P</kbd> · 굵기 1~8px · 태블릿 펜은 누르는 힘(필압)도 기록</p></div>
+      <div class="screen shot" style="--h:12.00em;--w:17.98em"><img src="img/pen-draw.png" alt="작업판에 쓴 필기"><span class="hl" style="left:11.1%;top:29.0%;width:55.4%;height:41.5%"></span></div>
+    </div>
+    <div class="callout"><b>이렇게 보이면 성공</b> · 마우스나 펜을 끄는 대로 선이 그려지고, 다 쓰면 <span class="ui">선택</span> (<kbd>V</kbd>) 으로 돌아갑니다</div>
+  </div>
+  <aside class="notes">아홉 번째 단계입니다. 위쪽 도구에서 펜을 누르면 옆에 색과 굵기를 고르는 칸이 나옵니다. 작업판 위에서 마우스를 누른 채 끌면 선이 그려집니다. 태블릿 펜을 쓰면 누르는 힘도 함께 기록되고, 펜을 쓰는 동안 손바닥이 닿아도 그려지지 않습니다. 다 썼으면 선택 도구나 V 키로 돌아갑니다.</aside>
+</section>
+<section class="slide" data-kind="step" data-title="10단계. 지우개">
+  <p class="kicker">따라 하기 · 10 / 10</p>
+  <h2><span class="ui">지우개</span> 를 누르고 지울 선 위를 문지릅니다</h2>
+  <div class="body">
+    <div class="row mid">
+      <div class="screen">
+        <div class="top"><span class="t">작업판</span><span class="tab">선택</span><span class="tab">펜</span><span class="tab on hl">지우개</span><span class="tab">동작 연결</span></div>
+        <div class="in"><div class="item"><span>〰 물결 선</span><span class="hl">문지르면 선 하나가 통째로 사라짐</span></div><div class="item"><span>╲ 짧은 선</span><span>그대로</span></div></div>
+      </div>
+      <ol class="flow v"><li><b>지우개 (E)</b><span>위쪽 도구</span></li><li><b>선 위를 끌기</b><span>닿은 선만 지워짐</span></li><li><b>되돌리기</b><span>Ctrl+Z</span></li></ol>
+    </div>
+    <div class="callout"><b>이렇게 보이면 성공</b> · 문지른 필기 선이 사라지고, 상자나 글 같은 요소는 그대로 남습니다</div>
+  </div>
+  <aside class="notes">열 번째 단계입니다. 위쪽 도구에서 지우개를 누르고 지우고 싶은 필기 선 위를 문지르면 그 선이 통째로 사라집니다. 지우개는 펜으로 쓴 필기만 지우고, 상자나 글 같은 요소는 지우지 않습니다. 잘못 지웠으면 컨트롤 Z 로 되돌리면 됩니다.</aside>
+</section>
+<section class="slide" data-kind="data" data-title="알아 두면 좋은 점">
+  <p class="kicker">알아 두면 좋은 점</p>
+  <h2>그림은 대충, 동작은 정확하게</h2>
+  <div class="body">
+    <div class="compare">
+      <div class="good"><h3>괜찮아요</h3>삐뚤게 그려도 됩니다 -- 위치만 전하면 충분<br>지운 요소·화면도 <kbd>Ctrl</kbd>+<kbd>Z</kbd> 로 되돌리기<br>필기는 확대해도 제자리에 남음</div>
+      <div class="bad"><h3>조심하세요</h3>이미지는 10MB 이하 PNG·JPEG·WebP·GIF 만<br>실제 이름·전화번호 대신 예시 값<br><b>연결선</b>은 그림일 뿐 -- 동작은 다음 장의 <b>동작</b> 칸에 적어야 전달됩니다</div>
+    </div>
+  </div>
+  <aside class="notes">알아 두면 좋은 점입니다. 그림은 위치를 전하는 용도라서 삐뚤어도 괜찮고, 지운 요소나 화면도 컨트롤 Z 로 되돌릴 수 있습니다. 다만 이미지는 10메가바이트 이하의 PNG, JPEG, WebP, GIF 파일만 넣을 수 있습니다. 또 연결선 요소는 그림일 뿐이라서, 누르면 무엇이 되는지는 다음 장의 동작 칸에 따로 적어야 AI 에게 전달됩니다.</aside>
+</section>
+<section class="slide" data-kind="concept" data-title="단축키 모음">
+  <p class="kicker">알아 두면 좋은 점</p>
+  <h2>자주 쓰는 단축키</h2>
+  <div class="body">
+    <table class="grid"><tr><th>키</th><th>하는 일</th><th>키</th><th>하는 일</th></tr><tr><td><kbd>V</kbd> <kbd>P</kbd> <kbd>E</kbd> <kbd>L</kbd></td><td>선택 · 펜 · 지우개 · 동작 연결</td><td><kbd>Ctrl</kbd>+<kbd>Z</kbd></td><td>실행 취소 (+<kbd>Shift</kbd> 다시 실행)</td></tr><tr><td><kbd>Delete</kbd></td><td>고른 것 지우기</td><td><kbd>Ctrl</kbd>+<kbd>C</kbd> <kbd>V</kbd> <kbd>D</kbd></td><td>복사 · 붙여넣기 · 복제</td></tr><tr><td>방향키</td><td>1px 옮기기 (<kbd>Shift</kbd> 10px)</td><td><kbd>Ctrl</kbd>+<kbd>G</kbd></td><td>묶기 (+<kbd>Shift</kbd> 풀기)</td></tr><tr><td><kbd>Esc</kbd></td><td>고르기 취소 · 묶음 밖으로</td><td><kbd>Ctrl</kbd>+휠</td><td>확대·축소</td></tr><tr><td><kbd>Shift</kbd>+<kbd>1</kbd></td><td>화면 맞춤</td><td><kbd>스페이스</kbd>+끌기</td><td>작업판 옮겨 보기</td></tr></table>
+    <div class="callout">맥에서는 <kbd>Ctrl</kbd> 대신 <kbd>⌘</kbd>. 왼쪽 칸 맨 아래 <b>단축키</b> 에도 같은 목록이 있습니다</div>
+  </div>
+  <aside class="notes">자주 쓰는 단축키 모음입니다. V 는 선택, P 는 펜, E 는 지우개, L 은 동작 연결 도구입니다. 컨트롤 Z 는 실행 취소, 컨트롤 D 는 복제, 컨트롤 G 는 묶기입니다. 맥에서는 컨트롤 대신 커맨드 키를 누르고, 같은 목록이 왼쪽 칸 맨 아래 단축키에도 적혀 있습니다.</aside>
+</section>
+
+</body>
+</html>

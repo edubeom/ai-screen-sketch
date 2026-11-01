@@ -5,6 +5,7 @@ test('앱이 열리고 콘솔 오류가 없다', async ({ page }) => {
   page.on('pageerror', (e) => errors.push(e.message));
   page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
   await page.goto('/');
+  await page.evaluate(() => new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))));
   await expect(page.getByTestId('save-status')).toContainText('저장됨');
   await page.getByTestId('preset-calendar').click();
   await page.getByTestId('palette-button').click();
