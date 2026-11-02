@@ -12,6 +12,9 @@ import {
   duplicateElements,
   duplicateScreen as duplicateScreenOp,
   groupElements,
+  hitAt,
+  mapScreen,
+  sortedElements as sortedEls,
   moveElements,
   moveScreen as moveScreenOp,
   newId,
@@ -27,7 +30,8 @@ import {
   type PresetKey,
   type SketchElement,
 } from '@sketch/core';
-import { commit, currentScreen, getState, setState, toast, updateScreen, type Tool } from './store.ts';
+import { describeElement } from '@sketch/exporters';
+import { commit, currentScreen, getState, pickColor, setState, toast, updateScreen, type Tool } from './store.ts';
 import { store } from './persistence.ts';
 
 export const GRID = 8;
@@ -184,7 +188,21 @@ export function selectAll() {
 }
 
 export function setTool(tool: Tool) {
-  setState({ tool, pickingTargetFor: undefined, selection: tool === 'select' || tool === 'connect' ? getState().selection : [] });
+  const s = getState();
+  setState({
+    tool,
+    fillOnce: false,
+    prevTool: tool !== s.tool && s.tool !== 'eraser' ? s.tool : s.prevTool,
+    pickingTargetFor: undefined,
+    selection: tool === 'select' || tool === 'connect' ? s.selection : [],
+  });
+}
+
+/** 지우개 ↔ 이전 도구 */
+export function toggleEraser() {
+  const s = getState();
+  if (s.tool === 'eraser') setTool(s.prevTool === 'eraser' ? 'pen' : s.prevTool);
+  else setTool('eraser');
 }
 
 // ---- 화면 ----
@@ -306,4 +324,68 @@ export async function addImageFile(file: File, point?: { x: number; y: number },
     },
     { selection: [el.id] },
   );
+}
+
+// ---- 색 (채우기 · 스포이트) ----
+
+/** 작업판이 알려 주는 좌표 변환 · 글 고치기 (펜 버튼이 쓴다) */
+interface CanvasApi {
+  toWorld: (clientX: number, clientY: number) => { x: number; y: number };
+  editText: (id: string) => void;
+}
+let canvasApi: CanvasApi | undefined;
+export function setCanvasApi(api: CanvasApi) {
+  canvasApi = api;
+}
+export function getCanvasApi() {
+  return canvasApi;
+}
+
+/** 채우기: 펜 아래 모형·요소·필기에 지금 색을, 빈 곳이면 화면 바탕 전체에 */
+export function fillAt(p: { x: number; y: number }) {
+  const s = getState();
+  const color = s.pen.color;
+  const sc = currentScreen(s);
+  const hit = hitAt(sc, p, 4 / s.zoom);
+  pickColor(color);
+  if (hit && 'stroke' in hit) {
+    const id = hit.stroke.id;
+    updateScreen((x) => ({ ...x, strokes: x.strokes.map((st) => (st.id === id ? { ...st, color } : st)) }));
+    return;
+  }
+  if (hit && 'element' in hit) {
+    const el = hit.element;
+    if (el.props.locked) return toast('잠긴 요소입니다', 'error');
+    const props = el.type === 'connector' ? { stroke: color } : { fill: color };
+    updateScreen((x) => ({ ...x, elements: x.elements.map((e) => (e.id === el.id ? { ...e, props: { ...e.props, ...props } } : e)) }));
+    return;
+  }
+  commit(mapScreen(s.project, sc.id, (x) => ({ ...x, background: color })));
+}
+
+/** 스포이트: 지금 커서 아래 보이는 색 (필기 → 위의 요소부터 → 바탕) */
+export function colorAt(p: { x: number; y: number }): string {
+  const s = getState();
+  const sc = currentScreen(s);
+  const tol = 3 / s.zoom;
+  const hit = hitAt(sc, p, tol);
+  if (hit && 'stroke' in hit) return hit.stroke.color;
+  const els = sortedEls(sc);
+  for (let i = els.length - 1; i >= 0; i--) {
+    const el = els[i];
+    if (el.type === 'group' || el.type === 'text' || el.type === 'image') continue;
+    const inside = p.x >= el.x - tol && p.x <= el.x + el.width + tol && p.y >= el.y - tol && p.y <= el.y + el.height + tol;
+    if (!inside) continue;
+    const first = describeElement(el)[0];
+    if (!first) continue;
+    if (first.kind === 'line') return first.stroke;
+    if ((first.kind === 'rect' || first.kind === 'ellipse' || first.kind === 'polygon') && first.fill !== 'none') return first.fill;
+  }
+  return sc.background ?? '#ffffff';
+}
+
+export function eyedropAt(p: { x: number; y: number }) {
+  const c = colorAt(p);
+  pickColor(c);
+  toast(`색을 가져왔습니다 ${c}`);
 }

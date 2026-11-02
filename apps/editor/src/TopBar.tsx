@@ -7,6 +7,7 @@ const TOOLS: { key: Tool; label: string; hint: string }[] = [
   { key: 'select', label: '선택', hint: '선택·이동·크기 (V)' },
   { key: 'pen', label: '펜', hint: '자유 필기 (P)' },
   { key: 'eraser', label: '지우개', hint: '필기 지우기 (E)' },
+  { key: 'fill', label: '채우기', hint: '모형·요소·바탕에 지금 색 칠하기 (F)' },
   { key: 'connect', label: '동작 연결', hint: '시작 요소에서 대상 요소로 끌기 (L)' },
 ];
 
@@ -45,17 +46,6 @@ export function TopBar({ onProjects, onExport, onImport }: { onProjects: () => v
         value={title}
         onChange={(e) => setState((s) => ({ project: { ...s.project, title: e.target.value }, dirty: true }))}
       />
-      <span
-        className={`save-badge ${shownStatus}`}
-        data-testid="save-status"
-        title={error ?? (lastSavedAt ? `마지막 저장 ${timeOf(lastSavedAt)} · revision ${revision}` : '')}
-      >
-        {shownStatus === 'idle' && dirty ? '변경됨' : STATUS_TEXT[shownStatus]}
-        {shownStatus === 'saved' && <small> r{revision} · {timeOf(lastSavedAt)}</small>}
-      </span>
-      {status === 'failed' && (
-        <button className="btn small" onClick={() => void saveNow()} title={error}>다시 저장</button>
-      )}
       <div className="sep" />
       <button className="btn icon" onClick={undo} disabled={!canUndo} title="실행 취소 (Ctrl/Cmd+Z)" aria-label="실행 취소">↶</button>
       <button className="btn icon" onClick={redo} disabled={!canRedo} title="다시 실행 (Ctrl/Cmd+Shift+Z)" aria-label="다시 실행">↷</button>
@@ -67,16 +57,17 @@ export function TopBar({ onProjects, onExport, onImport }: { onProjects: () => v
           </button>
         ))}
       </div>
-      {tool === 'pen' && (
-        <div className="pen-opts">
-          <input type="color" aria-label="펜 색" value={pen.color} onChange={(e) => setState({ pen: { ...pen, color: e.target.value } })} />
-          <select aria-label="펜 굵기" value={pen.width} onChange={(e) => setState({ pen: { ...pen, width: Number(e.target.value) } })}>
-            {[1, 2, 3, 5, 8].map((w) => (
-              <option key={w} value={w}>{w}px</option>
-            ))}
-          </select>
-        </div>
-      )}
+      <button
+        className="swatch-btn"
+        style={{ background: pen.color }}
+        title="지금 색 -- 눌러서 색 고르기"
+        aria-label="지금 색"
+        data-testid="current-color"
+        onClick={(e) => {
+          const r = e.currentTarget.getBoundingClientRect();
+          setState({ colorPopup: { x: r.left - 12, y: r.bottom - 6 } });
+        }}
+      />
       <div className="sep" />
       <button className="btn icon" onClick={() => zoomTo(zoom / 1.25)} title="축소 (Ctrl/Cmd+-)" aria-label="축소">−</button>
       <button className="btn zoom" onClick={() => zoomTo(1)} title="100%" data-testid="zoom">{Math.round(zoom * 100)}%</button>
@@ -89,6 +80,17 @@ export function TopBar({ onProjects, onExport, onImport }: { onProjects: () => v
         <input type="checkbox" checked={showLinks} onChange={(e) => setState({ showLinks: e.target.checked })} /> 동작선
       </label>
       <div className="grow" />
+      <span
+        className={`save-badge ${shownStatus}`}
+        data-testid="save-status"
+        title={error ?? (lastSavedAt ? `마지막 저장 ${timeOf(lastSavedAt)} · revision ${revision}` : '')}
+      >
+        {shownStatus === 'idle' && dirty ? '변경됨' : STATUS_TEXT[shownStatus]}
+        {shownStatus === 'saved' && <small> r{revision} · {timeOf(lastSavedAt)}</small>}
+      </span>
+      {status === 'failed' && (
+        <button className="btn small" onClick={() => void saveNow()} title={error}>다시 저장</button>
+      )}
       <button className="btn" onClick={onImport}>가져오기</button>
       <button className="btn primary" onClick={onExport}>내보내기</button>
     </header>

@@ -1,5 +1,5 @@
 // 화면과 요청문에 쓰는 한국어 이름표. NAMES.md 와 같은 말을 쓴다.
-import type { ActionKind, ElementType, NoteKind, StateKind, Trigger } from './types.ts';
+import type { ActionKind, ElementType, NoteKind, ShapeKind, StateKind, Trigger } from './types.ts';
 
 export const ELEMENT_LABELS: Record<ElementType, string> = {
   region: '영역',
@@ -11,7 +11,16 @@ export const ELEMENT_LABELS: Record<ElementType, string> = {
   image: '이미지',
   note: '메모',
   connector: '연결선',
+  shape: '모형',
   group: '묶음',
+};
+
+export const SHAPE_LABELS: Record<ShapeKind, string> = {
+  rect: '네모',
+  ellipse: '원',
+  star: '별',
+  triangle: '세모',
+  diamond: '마름모',
 };
 
 export const TRIGGER_LABELS: Record<Trigger, string> = {

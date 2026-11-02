@@ -159,6 +159,18 @@ export function resizeElement(screen: Screen, id: string, rect: Rect): Screen {
 export function deleteElements(screen: Screen, ids: Iterable<string>): Screen {
   const all = withDescendants(screen, ids);
   if (!all.size) return screen;
+  // 자식이 모두 지워진 묶음도 함께 지운다
+  for (let grew = true; grew; ) {
+    grew = false;
+    for (const g of screen.elements) {
+      if (g.type !== 'group' || all.has(g.id)) continue;
+      const kids = screen.elements.filter((e) => e.parentId === g.id);
+      if (kids.length && kids.every((k) => all.has(k.id))) {
+        all.add(g.id);
+        grew = true;
+      }
+    }
+  }
   const elements = renumber(sortedElements(screen).filter((e) => !all.has(e.id)));
   const interactions = screen.interactions.filter((i) => !all.has(i.sourceId));
   const states = screen.states.filter((s) => !s.targetId || !all.has(s.targetId));

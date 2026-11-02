@@ -99,5 +99,6 @@ export function installKeyboard() {
     if (k === 'p') return setTool('pen');
     if (k === 'e') return setTool('eraser');
     if (k === 'l') return setTool('connect');
+    if (k === 'f') return setTool('fill');
   });
 }

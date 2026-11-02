@@ -2,7 +2,7 @@
 import { useSyncExternalStore } from 'react';
 import { createProject, type Project, type Screen } from '@sketch/core';
 
-export type Tool = 'select' | 'pen' | 'eraser' | 'connect';
+export type Tool = 'select' | 'pen' | 'eraser' | 'connect' | 'fill';
 export type SaveStatus = 'idle' | 'saving' | 'saved' | 'failed';
 
 export interface EditorState {
@@ -14,11 +14,21 @@ export interface EditorState {
   /** 묶음 안으로 들어가 개별 요소를 고르는 중이면 그 묶음 id */
   enteredGroup?: string;
   tool: Tool;
+  /** 지우개로 바꾸기 전 도구 (펜 버튼 세 번 누르기로 돌아갈 곳) */
+  prevTool: Tool;
   zoom: number;
   pan: { x: number; y: number };
   grid: boolean;
   showLinks: boolean;
   pen: { color: string; width: number };
+  /** 최근에 쓴 색 (최신이 앞, 4개) */
+  recentColors: string[];
+  /** 손으로 그린 네모·원·별 등을 모형으로 바꿀지 */
+  recognizeShapes: boolean;
+  /** 펜 버튼으로 들어간 채우기: 한 번 칠하면 이전 도구로 돌아간다 */
+  fillOnce?: boolean;
+  /** 색 고르기 팝업 위치 (화면 px) */
+  colorPopup?: { x: number; y: number };
   /** 저장된 revision (project.revision 과 같게 유지) */
   savedRevision: number;
   saveStatus: SaveStatus;
@@ -37,6 +47,31 @@ export interface EditorState {
 
 const HISTORY_LIMIT = 150;
 
+// 이 브라우저에만 남기는 편의 설정 (프로젝트 데이터가 아님 -- NAMES.md)
+const PREF_PREFIX = 'ai-screen-sketch.';
+export function loadPref<T>(key: string, fallback: T): T {
+  try {
+    const v = localStorage.getItem(PREF_PREFIX + key);
+    return v === null ? fallback : (JSON.parse(v) as T);
+  } catch {
+    return fallback;
+  }
+}
+export function savePref(key: string, value: unknown) {
+  try {
+    localStorage.setItem(PREF_PREFIX + key, JSON.stringify(value));
+  } catch {
+    // 저장 못 해도 지금 화면에서는 그대로 쓴다
+  }
+}
+
+/** 지금 색을 바꾸고 최근 색 맨 앞에 넣는다 */
+export function pickColor(color: string) {
+  const recent = [color, ...state.recentColors.filter((c) => c.toLowerCase() !== color.toLowerCase())].slice(0, 4);
+  setState({ pen: { ...state.pen, color }, recentColors: recent });
+  savePref('recentColors', recent);
+}
+
 type Listener = () => void;
 const listeners = new Set<Listener>();
 
@@ -49,11 +84,14 @@ function initial(): EditorState {
     screenId: project.screens[0].id,
     selection: [],
     tool: 'select',
+    prevTool: 'select',
     zoom: 1,
     pan: { x: 40, y: 40 },
     grid: true,
     showLinks: true,
     pen: { color: '#1e293b', width: 3 },
+    recentColors: loadPref<string[]>('recentColors', []),
+    recognizeShapes: loadPref<boolean>('recognizeShapes', true),
     savedRevision: project.revision,
     saveStatus: 'idle',
     dirty: false,

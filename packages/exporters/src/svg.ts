@@ -19,6 +19,10 @@ export function shapeToSvg(s: Shape): string {
       const tspans = s.lines.map((l, i) => `<tspan x="${n(s.x)}" dy="${i ? lh : 0}">${escapeXml(l)}</tspan>`).join('');
       return `<text x="${n(s.x)}" y="${n(s.y)}" font-size="${s.fontSize}" fill="${escapeXml(s.fill)}"${s.anchor === 'middle' ? ' text-anchor="middle"' : ''}${s.weight ? ` font-weight="${s.weight}"` : ''}>${tspans}</text>`;
     }
+    case 'ellipse':
+      return `<ellipse cx="${n(s.cx)}" cy="${n(s.cy)}" rx="${n(s.rx)}" ry="${n(s.ry)}" fill="${escapeXml(s.fill)}" stroke="${escapeXml(s.stroke)}" stroke-width="${s.strokeWidth}"/>`;
+    case 'polygon':
+      return `<polygon points="${s.points.map(([x, y]) => `${n(x)},${n(y)}`).join(' ')}" fill="${escapeXml(s.fill)}" stroke="${escapeXml(s.stroke)}" stroke-width="${s.strokeWidth}" stroke-linejoin="round"/>`;
     case 'image':
       return `<image x="${n(s.x)}" y="${n(s.y)}" width="${n(s.width)}" height="${n(s.height)}" href="${escapeXml(s.href)}" preserveAspectRatio="xMidYMid meet"/>`;
   }
@@ -55,7 +59,7 @@ export function renderScreenSvg(screen: Screen, opts: RenderOptions): string {
   return [
     `<svg xmlns="http://www.w3.org/2000/svg" width="${screen.width}" height="${screen.height}" viewBox="0 0 ${screen.width} ${screen.height}" font-family="${escapeXml(FONT_FAMILY)}">`,
     `<defs>${arrowMarkers(['#2563eb', '#16a34a', '#475569'])}</defs>`,
-    `<rect width="100%" height="100%" fill="#ffffff"/>`,
+    `<rect width="100%" height="100%" fill="${escapeXml(screen.background ?? '#ffffff')}"/>`,
     ...parts,
     '</svg>',
   ].join('');

@@ -12,6 +12,10 @@
 | 요소 | element (`SketchElement`) | 종류는 아래 9가지 + 묶음 |
 | 영역 · 텍스트 · 버튼 · 입력창 · 목록 · 카드 · 이미지 · 메모 · 연결선 | region · text · button · input · list · card · image · note · connector | `ElementType` |
 | 묶음 | group | 자식은 `parentId` 로 가리킴 |
+| 모형 (네모 · 원 · 별 · 세모 · 마름모) | shape (props.shapeKind: rect · ellipse · star · triangle · diamond) | 손으로 그리면 알아봄 (`recognizeShape`) |
+| 바탕색 · 채운 색 · 선 색 | screen.background · props.fill · props.stroke | |
+| 채우기 · 스포이트 · 색 팝업 | tool `fill` · `eyedropAt` · `ColorPopup` | |
+| 펜촉에서 먼 버튼 · 가까운 버튼 | pen slot `far` · `near` | 등록은 localStorage `ai-screen-sketch.penButtons` |
 | 묶음 프리셋 (캘린더 · 작업 목록 · 상세 패널) | preset (calendar · task_list · detail_panel) | |
 | 필기 | stroke (`Stroke`, points `[x,y,pressure?]`) | |
 | 동작 | interaction (`Interaction`) | "이벤트"·"액션"이라고 따로 부르지 않는다 |
@@ -28,3 +32,4 @@
 | 검증 결과 | issues (`SpecIssue`) | 차단 error · 경고 warning · 안내 info |
 | 저장 번호 | revision (`savedRevision`) | 실행 취소 히스토리와 따로 |
 | 브라우저 저장소 | IndexedDB `ai-screen-sketch` (저장소 projects · assets · meta, 열쇠 lastProjectId) | **이름을 바꾸면 쓰던 프로젝트가 안 보인다 -- 바꾸기 전에 말한다** |
+| 이 브라우저 편의 설정 | localStorage `ai-screen-sketch.recentColors` · `.recognizeShapes` · `.penButtons` | 프로젝트 데이터가 아님 -- 지워도 설계는 그대로 |

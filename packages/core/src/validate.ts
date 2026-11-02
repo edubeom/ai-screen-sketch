@@ -6,6 +6,7 @@ import {
   ELEMENT_TYPES,
   NOTE_KINDS_LIST,
   SCHEMA_VERSION,
+  SHAPE_KINDS,
   STATE_KINDS,
   TRIGGERS,
   type ActionKind,
@@ -42,6 +43,8 @@ export interface ParseResult {
 type Obj = Record<string, unknown>;
 const isObj = (v: unknown): v is Obj => typeof v === 'object' && v !== null && !Array.isArray(v);
 const ID_RE = /^[A-Za-z0-9_.:-]{1,80}$/;
+/** 색: #rgb·#rrggbb(aa) 또는 none·transparent 같은 이름 */
+export const COLOR_RE = /^#[0-9a-fA-F]{3,8}$|^[a-z]{3,20}$/;
 
 class Reader {
   errors: string[] = [];
@@ -144,7 +147,13 @@ function readElement(r: Reader, raw: unknown): SketchElement | undefined {
   const props: Obj = {};
   if (isObj(propsRaw)) {
     const pr = r.at('props');
-    for (const k of ['layoutIntent', 'placeholder', 'dataBinding', 'fill'] as const) {
+    const sk = pr.oneOf(propsRaw, 'shapeKind', SHAPE_KINDS, true);
+    if (sk) props.shapeKind = sk;
+    for (const k of ['fill', 'stroke'] as const) {
+      const v = pr.str(propsRaw, k, { optional: true, max: 40 });
+      if (v !== undefined && !COLOR_RE.test(v)) pr.at(k).fail('색 형식이 아닙니다');
+    }
+    for (const k of ['layoutIntent', 'placeholder', 'dataBinding', 'fill', 'stroke'] as const) {
       const v = pr.str(propsRaw, k, { optional: true, max: 2000 });
       if (v !== undefined) props[k] = v;
     }
@@ -208,7 +217,7 @@ function readStroke(r: Reader, raw: unknown): Stroke | undefined {
     points.push(typeof pressure === 'number' && pressure >= 0 && pressure <= 1 ? [x, y, pressure] : [x, y]);
   }
   if (!id || !color || width === undefined) return undefined;
-  if (!/^#[0-9a-fA-F]{3,8}$|^[a-z]{3,20}$/.test(color)) {
+  if (!COLOR_RE.test(color)) {
     r.at('color').fail('색 형식이 아닙니다');
     return undefined;
   }
@@ -265,8 +274,12 @@ function readScreen(r: Reader, raw: unknown): Screen | undefined {
     .arr(raw, 'strokes', LIMITS.strokesPerScreen, true)
     .map((e, i) => readStroke(r.at('strokes').at(i), e))
     .filter((e): e is Stroke => !!e);
+  const background = r.str(raw, 'background', { optional: true, max: 40 });
+  if (background !== undefined && !COLOR_RE.test(background)) r.at('background').fail('색 형식이 아닙니다');
   if (!id || name === undefined || width === undefined || height === undefined) return undefined;
-  return { id, name, width, height, elements, interactions, notes, states, strokes };
+  const screen: Screen = { id, name, width, height, elements, interactions, notes, states, strokes };
+  if (background !== undefined && COLOR_RE.test(background)) screen.background = background;
+  return screen;
 }
 
 function readAsset(r: Reader, raw: unknown): Asset | undefined {

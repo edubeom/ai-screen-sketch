@@ -3,8 +3,15 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type PointerEvent as RPointerEvent } from 'react';
 import {
   addStroke,
+  addElements,
   connectorEnds,
   connectorFromEnds,
+  createElement,
+  deleteElements,
+  hitAt,
+  inCenter,
+  recognizeShape,
+  SHAPE_LABELS,
   deleteStroke,
   interactionTargetProblem,
   mapScreen,
@@ -34,21 +41,22 @@ import {
   gestureBaseProject,
   getState,
   previewGesture,
+  savePref,
   setState,
   toast,
   updateScreen,
   useEditor,
 } from './store.ts';
-import { addElementAt, addImageFile, addPresetAt, GRID, setViewportSize, zoomTo } from './actions.ts';
+import { addElementAt, addImageFile, addPresetAt, fillAt, GRID, setCanvasApi, setTool, setViewportSize, zoomTo } from './actions.ts';
 
 type Handle = 'nw' | 'n' | 'ne' | 'e' | 'se' | 's' | 'sw' | 'w' | 'a' | 'b';
 
 type Drag =
-  | { kind: 'move'; start: Pt; ids: string[]; anchor: Rect; moved: boolean; clickedId: string }
+  | { kind: 'move'; start: Pt; ids: string[]; anchor: Rect; moved: boolean; clickedId: string; wasOnlySelected: boolean }
   | { kind: 'resize'; start: Pt; id: string; handle: Handle; orig: SketchElement }
   | { kind: 'marquee'; start: Pt; cur: Pt; additive: boolean }
   | { kind: 'pan'; startClient: Pt; startPan: Pt }
-  | { kind: 'pen'; points: StrokePoint[] }
+  | { kind: 'pen'; points: StrokePoint[]; startedAt: number }
   | { kind: 'erase'; erased: boolean }
   | { kind: 'connect'; sourceId: string; cur: Pt };
 
@@ -108,7 +116,7 @@ function elementIdAt(clientX: number, clientY: number): string | undefined {
   return undefined;
 }
 
-export function Canvas() {
+export function Canvas({ onPenButtons }: { onPenButtons: () => void }) {
   const svgRef = useRef<SVGSVGElement>(null);
   const worldRef = useRef<SVGGElement>(null);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -127,6 +135,7 @@ export function Canvas() {
   const grid = useEditor((s) => s.grid);
   const showLinks = useEditor((s) => s.showLinks);
   const pen = useEditor((s) => s.pen);
+  const recognize = useEditor((s) => s.recognizeShapes);
   const assetUrls = useEditor((s) => s.assetUrls);
   const enteredGroup = useEditor((s) => s.enteredGroup);
   const picking = useEditor((s) => s.pickingTargetFor);
@@ -191,6 +200,10 @@ export function Canvas() {
     return { x: p.x, y: p.y };
   };
 
+  useEffect(() => {
+    setCanvasApi({ toWorld, editText: (id: string) => setEditing(id) });
+  });
+
   const sorted = useMemo(() => sortedElements(screen), [screen]);
   const byId = useMemo(() => new Map(screen.elements.map((e) => [e.id, e])), [screen]);
 
@@ -228,7 +241,7 @@ export function Canvas() {
       // 펜을 쓴 기기에서는 손가락(손바닥) 입력으로 그리지 않는다
       if (e.pointerType === 'touch' && penSeen.current) return;
       svg.setPointerCapture(e.pointerId);
-      setD({ kind: 'pen', points: [pointOf(e, p)] });
+      setD({ kind: 'pen', points: [pointOf(e, p)], startedAt: Date.now() });
       return;
     }
     if (s.tool === 'eraser') {
@@ -236,6 +249,11 @@ export function Canvas() {
       beginGesture();
       setD({ kind: 'erase', erased: false });
       eraseAt(p);
+      return;
+    }
+    if (s.tool === 'fill') {
+      fillAt(p);
+      if (s.fillOnce) setTool(s.prevTool === 'fill' ? 'select' : s.prevTool);
       return;
     }
     if (s.tool === 'connect') {
@@ -264,6 +282,7 @@ export function Canvas() {
       }
       const id = selectableId(screen, hitId, entered);
       let sel = s.selection;
+      const wasOnlySelected = sel.length === 1 && sel[0] === id;
       if (e.shiftKey || e.metaKey || e.ctrlKey) {
         sel = sel.includes(id) ? sel.filter((x) => x !== id) : [...sel, id];
         setState({ selection: sel });
@@ -278,7 +297,7 @@ export function Canvas() {
       svg.setPointerCapture(e.pointerId);
       beginGesture();
       const anchor = els.find((x) => x.id === id) ?? els[0];
-      setD({ kind: 'move', start: p, ids: sel, anchor: { x: anchor.x, y: anchor.y, width: anchor.width, height: anchor.height }, moved: false, clickedId: id });
+      setD({ kind: 'move', start: p, ids: sel, anchor: { x: anchor.x, y: anchor.y, width: anchor.width, height: anchor.height }, moved: false, clickedId: id, wasOnlySelected });
       return;
     }
     // 빈 곳: 영역 선택
@@ -293,15 +312,51 @@ export function Canvas() {
     return e.pointerType === 'pen' && e.pressure > 0 ? [x, y, Math.round(e.pressure * 100) / 100] : [x, y];
   };
 
+  /** 지우개: 필기·요소 가리지 않고 펜 아래 맨 위의 것을 지운다 */
   const eraseAt = (p: Pt) => {
     const sc = currentScreen();
     const tol = 6 / getState().zoom;
-    const hits = sc.strokes.filter((st) => strokeHit(st, p, tol));
-    if (!hits.length) return;
+    const strokes = sc.strokes.filter((st) => strokeHit(st, p, tol));
     let next = sc;
-    for (const h of hits) next = deleteStroke(next, h.id);
+    if (strokes.length) for (const h of strokes) next = deleteStroke(next, h.id);
+    else {
+      const hit = hitAt(sc, p, tol);
+      if (!hit || !('element' in hit) || hit.element.props.locked) return;
+      next = deleteElements(sc, [hit.element.id]);
+    }
     previewGesture(mapScreen(getState().project, sc.id, () => next));
     if (dragRef.current?.kind === 'erase') dragRef.current.erased = true;
+  };
+
+  /** 펜 끝: 짧게 톡 = 모형 가운데면 글 쓰기, 닫힌 도형 = 모형으로 바꾸기, 나머지 = 필기 */
+  const finishPen = (d: Extract<Drag, { kind: 'pen' }>) => {
+    const s = getState();
+    const xs = d.points.map((q) => q[0]);
+    const ys = d.points.map((q) => q[1]);
+    const span = Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys)) * s.zoom;
+    if (span < 6 && Date.now() - d.startedAt < 400) {
+      const at = { x: d.points[0][0], y: d.points[0][1] };
+      const hit = hitAt(currentScreen(), at, 0);
+      if (hit && 'element' in hit && hit.element.type === 'shape' && inCenter(hit.element, at)) {
+        setEditing(hit.element.id);
+        return;
+      }
+    }
+    const stroke = { id: newId('stk'), points: d.points, color: s.pen.color, width: s.pen.width };
+    updateScreen((sc) => addStroke(sc, stroke));
+    if (!s.recognizeShapes) return;
+    const shape = recognizeShape(d.points);
+    if (!shape) return;
+    // 필기를 먼저 남기고 모형으로 바꾼다 -- Ctrl+Z 한 번이면 손으로 그린 선으로 돌아간다
+    const el = createElement('shape', shape.x, shape.y, {
+      width: shape.width,
+      height: shape.height,
+      name: SHAPE_LABELS[shape.kind],
+      text: '',
+      props: { shapeKind: shape.kind, stroke: s.pen.color },
+    });
+    updateScreen((sc) => addElements(deleteStroke(sc, stroke.id), [el]));
+    toast(`${SHAPE_LABELS[shape.kind]}로 바꿨습니다 -- 가운데를 누르면 글을 씁니다 (Ctrl+Z: 손그림으로)`);
   };
 
   const onPointerMove = (e: RPointerEvent<SVGSVGElement>) => {
@@ -316,7 +371,7 @@ export function Canvas() {
       case 'pen': {
         const events = typeof e.nativeEvent.getCoalescedEvents === 'function' ? e.nativeEvent.getCoalescedEvents() : [];
         const pts = (events.length ? events : [e.nativeEvent]).map((ev) => pointOf(ev, toWorld(ev.clientX, ev.clientY)));
-        setD({ kind: 'pen', points: [...d.points, ...pts] });
+        setD({ ...d, points: [...d.points, ...pts] });
         break;
       }
       case 'erase':
@@ -375,16 +430,17 @@ export function Canvas() {
     const s = getState();
     switch (d.kind) {
       case 'pen':
-        if (d.points.length) {
-          const stroke = { id: newId('stk'), points: d.points, color: s.pen.color, width: s.pen.width };
-          updateScreen((sc) => addStroke(sc, stroke));
-        }
+        if (d.points.length) finishPen(d);
         break;
-      case 'move':
+      case 'move': {
         endGesture();
         // 여러 개를 고른 상태에서 끌지 않고 누르기만 했으면 누른 것만 고른다
         if (!d.moved && s.selection.length > 1) setState({ selection: [d.clickedId] });
+        // 이미 고른 모형의 가운데를 한 번 더 누르면 글 쓰기
+        const el = byId.get(d.clickedId);
+        if (!d.moved && d.wasOnlySelected && el?.type === 'shape' && !el.props.locked && inCenter(el, d.start)) setEditing(el.id);
         break;
+      }
       case 'erase':
       case 'resize':
         endGesture();
@@ -464,7 +520,7 @@ export function Canvas() {
   const single = selected.length === 1 ? selected[0] : undefined;
   const hs = 8 / zoom;
   const ixFor = screen.interactions;
-  const cursor = tool === 'pen' ? 'crosshair' : tool === 'eraser' ? 'cell' : tool === 'connect' || picking ? 'alias' : drag?.kind === 'pan' ? 'grabbing' : 'default';
+  const cursor = tool === 'pen' ? 'crosshair' : tool === 'eraser' ? 'cell' : tool === 'fill' ? 'copy' : tool === 'connect' || picking ? 'alias' : drag?.kind === 'pan' ? 'grabbing' : 'default';
 
   const center = (el: SketchElement): Pt => ({ x: el.x + el.width / 2, y: el.y + el.height / 2 });
   /** 가운데에서 다른 점으로 가는 선이 상자 테두리와 만나는 점 -- 동작선이 가운데에 몰리지 않게 */
@@ -500,7 +556,7 @@ export function Canvas() {
         </defs>
         <g ref={worldRef} transform={`translate(${pan.x} ${pan.y}) scale(${zoom})`}>
           <rect className="artboard-shadow" x={2} y={3} width={screen.width} height={screen.height} />
-          <rect className="artboard" x={0} y={0} width={screen.width} height={screen.height} />
+          <rect className="artboard" x={0} y={0} width={screen.width} height={screen.height} style={screen.background ? { fill: screen.background } : undefined} />
           {grid && zoom > 0.35 && <rect x={0} y={0} width={screen.width} height={screen.height} fill="url(#grid)" pointerEvents="none" />}
           <g className={tool === 'select' || tool === 'connect' || picking ? '' : 'no-hit'}>
             {sorted.map((el) => (
@@ -575,6 +631,22 @@ export function Canvas() {
           왼쪽에서 요소를 끌어 놓거나 눌러서 추가하세요. 실제 개인정보 대신 <b>예시 값</b>을 넣어 주세요.
         </div>
       )}
+      {/* 펜 설정은 작업판 위에 띄운다 -- 위쪽 막대 폭이 도구에 따라 바뀌지 않게 */}
+      <div className="canvas-tools" data-testid="canvas-tools">
+        {tool === 'pen' && (
+          <>
+            <label className="check" title="손으로 그린 네모·원·별·세모·마름모를 모형으로 바꿉니다">
+              <input type="checkbox" checked={recognize} data-testid="recognize" onChange={(e) => { setState({ recognizeShapes: e.target.checked }); savePref('recognizeShapes', e.target.checked); }} /> 모형 인식
+            </label>
+            <select aria-label="펜 굵기" value={pen.width} onChange={(e) => setState({ pen: { ...pen, width: Number(e.target.value) } })}>
+              {[1, 2, 3, 5, 8].map((w) => (
+                <option key={w} value={w}>{w}px</option>
+              ))}
+            </select>
+          </>
+        )}
+        <button className="btn small" onClick={onPenButtons} title="펜 옆 버튼 기능 설정">펜 버튼</button>
+      </div>
       {picking && <div className="canvas-banner">작업판에서 동작의 대상 요소를 누르세요 (Esc: 취소)</div>}
       {tool === 'connect' && <div className="canvas-banner">동작 연결: 시작 요소를 눌러 대상 요소까지 끌어 놓으세요</div>}
     </div>

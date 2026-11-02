@@ -27,6 +27,10 @@ function ShapeView({ s }: { s: Shape }) {
         </text>
       );
     }
+    case 'ellipse':
+      return <ellipse cx={s.cx} cy={s.cy} rx={s.rx} ry={s.ry} fill={s.fill} stroke={s.stroke} strokeWidth={s.strokeWidth} />;
+    case 'polygon':
+      return <polygon points={s.points.map((p) => p.join(',')).join(' ')} fill={s.fill} stroke={s.stroke} strokeWidth={s.strokeWidth} strokeLinejoin="round" />;
     case 'image':
       return <image x={s.x} y={s.y} width={s.width} height={s.height} href={s.href} preserveAspectRatio="xMidYMid meet" />;
   }

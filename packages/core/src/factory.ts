@@ -59,6 +59,7 @@ const DEFAULT_SIZE: Record<ElementType, [number, number]> = {
   image: [200, 150],
   note: [200, 120],
   connector: [160, 0],
+  shape: [160, 120],
   group: [200, 200],
 };
 

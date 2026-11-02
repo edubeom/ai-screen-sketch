@@ -7,6 +7,8 @@ import {
   NOTE_LABELS,
   NOTE_KINDS_LIST,
   SCREEN_PRESETS,
+  SHAPE_KINDS,
+  SHAPE_LABELS,
   STATE_KINDS,
   STATE_LABELS,
   TRIGGER_LABELS,
@@ -18,6 +20,7 @@ import {
   deleteNote,
   deleteState,
   interactionTargetProblem,
+  mapScreen,
   newId,
   resizeElement,
   sortedElements,
@@ -110,6 +113,13 @@ function ScreenProps({ screen }: { screen: Screen }) {
         <Num label="너비" value={screen.width} onChange={(v) => set({ width: Math.max(100, Math.min(20000, Math.round(v))) }, 'w')} />
         <Num label="높이" value={screen.height} onChange={(v) => set({ height: Math.max(100, Math.min(20000, Math.round(v))) }, 'h')} />
       </div>
+      {screen.background && (
+        <div className="row">
+          <span className="swatch" style={{ background: screen.background }} />
+          <span className="muted grow">바탕색 {screen.background}</span>
+          <button className="btn small" onClick={() => commit(mapScreen(getState().project, screen.id, (x) => ({ ...x, background: undefined })))}>바탕색 없애기</button>
+        </div>
+      )}
       <p className="muted">크기가 다른 화면은 따로 설계합니다. 상세 상태를 그리려면 화면을 복제하세요.</p>
       <button className="btn small" onClick={() => duplicateCurrentScreen(`${screen.name} (상태)`)}>상태 화면으로 복제</button>
 
@@ -180,6 +190,22 @@ function ElementProps({ el, screen }: { el: SketchElement; screen: Screen }) {
       <Field label="배치 의도" hint="절대 좌표 대신 의도를 남깁니다">
         <Text value={el.props.layoutIntent ?? ''} placeholder="예: 캘린더는 위, 경계선으로 높이 조절" onChange={(v) => set({ props: { layoutIntent: v } }, 'intent')} />
       </Field>
+      {el.type === 'shape' && (
+        <Field label="모형">
+          <select value={el.props.shapeKind ?? 'rect'} data-testid="shape-kind" onChange={(e) => set({ props: { shapeKind: e.target.value as typeof SHAPE_KINDS[number] } }, 'sk')}>
+            {SHAPE_KINDS.map((k) => (
+              <option key={k} value={k}>{SHAPE_LABELS[k]}</option>
+            ))}
+          </select>
+        </Field>
+      )}
+      {el.props.fill && (
+        <div className="row">
+          <span className="swatch" style={{ background: el.props.fill }} />
+          <span className="muted grow">채운 색 {el.props.fill}</span>
+          <button className="btn small" onClick={() => set({ props: { fill: undefined } }, 'fill')}>색 없애기</button>
+        </div>
+      )}
       {el.type === 'connector' && (
         <Field label="연결선 종류" hint="그림일 뿐 동작은 '동작' 칸에서 만든 것만 명세에 들어갑니다">
           <select value={el.props.connectorKind ?? 'plain'} onChange={(e) => set({ props: { connectorKind: e.target.value as 'plain' } }, 'ck')}>

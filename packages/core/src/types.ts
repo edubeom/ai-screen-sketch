@@ -13,10 +13,11 @@ export type ElementType =
   | 'image'
   | 'note'
   | 'connector'
+  | 'shape'
   | 'group';
 
 export const ELEMENT_TYPES: ElementType[] = [
-  'region', 'text', 'button', 'input', 'list', 'card', 'image', 'note', 'connector', 'group',
+  'region', 'text', 'button', 'input', 'list', 'card', 'image', 'note', 'connector', 'shape', 'group',
 ];
 
 export interface ElementProps {
@@ -37,7 +38,15 @@ export interface ElementProps {
   locked?: boolean;
   /** 색 지정(선택). 없으면 요소 종류 기본색 */
   fill?: string;
+  /** shape: 모형 종류 */
+  shapeKind?: ShapeKind;
+  /** shape·connector: 선 색 (없으면 기본색) */
+  stroke?: string;
 }
+
+/** 손으로 그린 선을 알아보고 바꾸는 모형 */
+export type ShapeKind = 'rect' | 'ellipse' | 'star' | 'triangle' | 'diamond';
+export const SHAPE_KINDS: ShapeKind[] = ['rect', 'ellipse', 'star', 'triangle', 'diamond'];
 
 export interface SketchElement {
   id: string;
@@ -133,6 +142,8 @@ export interface Screen {
   notes: ScreenNote[];
   states: ScreenState[];
   strokes: Stroke[];
+  /** 바탕색 (없으면 흰색) */
+  background?: string;
 }
 
 export interface Asset {

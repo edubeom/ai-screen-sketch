@@ -7,7 +7,7 @@
 |---|---|---|---|---|
 | 설계 코어 | ✅ 동작 | packages/core/src/types.ts, labels.ts, factory.ts, ops.ts, validate.ts, digest.ts, geometry.ts | `npm test` 의 core.test.ts 통과 | (내부 모듈) |
 | 작업판 편집 | ✅ 동작 | apps/editor/src/Canvas.tsx, ElementView.tsx, actions.ts, LeftPanel.tsx, TopBar.tsx, keyboard.ts, packages/exporters/src/shapes.ts | 요소를 놓고 끌어 옮기고 핸들로 크기를 바꾼 뒤 Ctrl+Z 로 되돌아간다 (e2e 기준 1) | manual/sketch.html |
-| 필기 | ✅ 동작 | apps/editor/src/Canvas.tsx (펜·지우개), ElementView.tsx (StrokeView), packages/exporters/src/shapes.ts (strokePath) | 확대해서 그린 선이 축소해도 같은 요소 위에 있다 (e2e 기준 2) | manual/sketch.html |
+| 필기 | ✅ 동작 | apps/editor/src/Canvas.tsx (펜·지우개·채우기·모형 인식), ElementView.tsx (StrokeView), ColorPopup.tsx, penButtons.ts, PenButtonsDialog.tsx, packages/core/src/recognize.ts, packages/exporters/src/shapes.ts (strokePath·모형) | 확대해서 그린 선이 축소해도 같은 요소 위에 있다 · 손으로 그린 네모가 모형이 되고 가운데를 누르면 글 · 지우개로 텍스트가 지워진다 (e2e 기준 2, pen.spec.ts) | manual/sketch.html |
 | 동작·상태 명세 | ✅ 동작 | apps/editor/src/Inspector.tsx, IssuesPanel.tsx, Canvas.tsx (동작 연결·동작선), packages/core/src/validate.ts (checkSpec) | 카드를 시간 칸으로 동작 연결하고 예외·검증 기준을 적고, 목록에 빈 상태를 붙이면 경고가 사라진다 (e2e 기준 3) | manual/interaction.html |
 | 로컬 저장 | ✅ 동작 | apps/editor/src/persistence.ts, store.ts, packages/storage/src/index.ts | 고친 뒤 창을 닫았다 열어도 그대로이고 상단에 "저장됨 r번호" (e2e 기준 4) | manual/index.html |
 | 내보내기·가져오기 | ✅ 동작 | apps/editor/src/exportFlow.ts, Dialogs.tsx, packages/exporters/src/bundle.ts, requirements.ts, svg.ts, trace.ts | ZIP 을 내보내고 다시 가져오면 화면·필기·동작이 같고, 깨진 연결이 있으면 내보내기가 막힌다 (e2e 기준 5) | manual/export.html |
@@ -26,7 +26,7 @@ AI 가 채웁니다 (사용자에게 묻지 않고 프로젝트에서 읽어서)
 | 저장 | 브라우저 IndexedDB | 사용자의 브라우저 | NAMES.md 의 저장 이름 (`ai-screen-sketch`) |
 | 파일 | ZIP (JSZip) · JSON | 내려받기 · 올리기 | packages/exporters/src/bundle.ts |
 | 코드 구성 | npm 워크스페이스 (TypeScript 7) | 내 컴퓨터 | package.json, tsconfig.json |
-| 시험 | Vitest (단위) · Playwright (브라우저) | 내 컴퓨터 | vitest.config.ts, packages/core/test/core.test.ts, packages/exporters/test/exporters.test.ts, packages/storage/test/storage.test.ts, playwright.config.ts, e2e/acceptance.spec.ts, e2e/smoke.spec.ts |
+| 시험 | Vitest (단위) · Playwright (브라우저) | 내 컴퓨터 | vitest.config.ts, packages/core/test/core.test.ts, packages/core/test/recognize.test.ts, packages/exporters/test/exporters.test.ts, packages/storage/test/storage.test.ts, playwright.config.ts, e2e/acceptance.spec.ts, e2e/pen.spec.ts, e2e/smoke.spec.ts |
 
 ## 함께 쓰는 파일
 여러 기능이 같이 쓰는 파일입니다. 이 파일을 고치면 **모든 기능**을 점검합니다.

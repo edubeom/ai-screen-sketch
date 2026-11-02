@@ -1,6 +1,6 @@
 // 좌표 계산 도우미 (화면 좌표 기준)
-import type { SketchElement, Stroke } from './types.ts';
-import type { Rect } from './ops.ts';
+import type { Screen, SketchElement, Stroke } from './types.ts';
+import { sortedElements, type Rect } from './ops.ts';
 
 export interface Point {
   x: number;
@@ -68,4 +68,28 @@ export function strokeHit(stroke: Stroke, p: Point, tolerance: number): boolean 
 
 export function snap(v: number, grid: number): number {
   return Math.round(v / grid) * grid;
+}
+
+/** 점 아래에 보이는 것 중 가장 위의 것 -- 필기가 요소보다 위에 그려진다. 묶음 자체는 고르지 않는다 */
+export function hitAt(screen: Screen, p: Point, tolerance: number): { stroke: Stroke } | { element: SketchElement } | undefined {
+  for (let i = screen.strokes.length - 1; i >= 0; i--) {
+    if (strokeHit(screen.strokes[i], p, tolerance)) return { stroke: screen.strokes[i] };
+  }
+  const els = sortedElements(screen);
+  for (let i = els.length - 1; i >= 0; i--) {
+    const el = els[i];
+    if (el.type === 'group') continue;
+    if (el.type === 'connector') {
+      const { a, b } = connectorEnds(el);
+      if (distToSegment(p, a, b) <= tolerance + 4) return { element: el };
+      continue;
+    }
+    if (p.x >= el.x - tolerance && p.x <= el.x + el.width + tolerance && p.y >= el.y - tolerance && p.y <= el.y + el.height + tolerance) return { element: el };
+  }
+  return undefined;
+}
+
+/** 요소 가운데 부분(가로·세로 가운데 60%)인지 -- 모형 안에 글 쓰기 */
+export function inCenter(el: Rect, p: Point): boolean {
+  return Math.abs(p.x - (el.x + el.width / 2)) <= el.width * 0.3 && Math.abs(p.y - (el.y + el.height / 2)) <= el.height * 0.3;
 }

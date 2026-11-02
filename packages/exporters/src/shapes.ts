@@ -1,12 +1,14 @@
 // 요소의 겉모습을 기본 도형 목록으로 설명한다.
 // 편집기(React)와 PNG 출력(SVG 문자열)이 같은 설명을 써서 화면과 내보낸 그림이 같게 보인다.
-import { connectorEnds, type SketchElement, type Stroke } from '@sketch/core';
+import { connectorEnds, shapeOutline, type SketchElement, type Stroke } from '@sketch/core';
 
 export type Shape =
   | { kind: 'rect'; x: number; y: number; width: number; height: number; rx?: number; fill: string; stroke?: string; strokeWidth?: number; dash?: string }
   | { kind: 'line'; x1: number; y1: number; x2: number; y2: number; stroke: string; strokeWidth: number; dash?: string; arrow?: boolean }
   | { kind: 'text'; x: number; y: number; lines: string[]; fontSize: number; fill: string; anchor?: 'start' | 'middle'; weight?: number; lineHeight?: number }
-  | { kind: 'image'; x: number; y: number; width: number; height: number; href: string };
+  | { kind: 'image'; x: number; y: number; width: number; height: number; href: string }
+  | { kind: 'ellipse'; cx: number; cy: number; rx: number; ry: number; fill: string; stroke: string; strokeWidth: number }
+  | { kind: 'polygon'; points: [number, number][]; fill: string; stroke: string; strokeWidth: number };
 
 export const FONT_FAMILY = "'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', 'Noto Sans CJK KR', sans-serif";
 
@@ -69,6 +71,25 @@ export function describeElement(el: SketchElement, assetHref?: string): Shape[] 
   switch (el.type) {
     case 'group':
       return [];
+    case 'shape': {
+      const kind = el.props.shapeKind ?? 'rect';
+      const stroke = el.props.stroke ?? C.ink;
+      const sf = fill ?? 'none';
+      const shapes: Shape[] = [];
+      if (kind === 'rect') shapes.push({ kind: 'rect', x, y, width: w, height: h, rx: 3, fill: sf, stroke, strokeWidth: 2 });
+      else if (kind === 'ellipse') shapes.push({ kind: 'ellipse', cx: x + w / 2, cy: y + h / 2, rx: w / 2, ry: h / 2, fill: sf, stroke, strokeWidth: 2 });
+      else shapes.push({ kind: 'polygon', points: (shapeOutline(kind) ?? []).map(([u, v]) => [x + u * w, y + v * h]), fill: sf, stroke, strokeWidth: 2 });
+      if (label) {
+        // 모형 안쪽 가운데에 글 (별·세모는 안쪽이 좁다)
+        const inner = kind === 'rect' ? 0.86 : kind === 'ellipse' || kind === 'diamond' ? 0.68 : 0.46;
+        const fs = Math.max(11, Math.min(20, Math.round(Math.min(w, h) * 0.16)));
+        const lh = Math.round(fs * 1.3);
+        const lines = wrapText(label, w * inner, fs, Math.max(1, Math.floor((h * inner) / lh)));
+        const cyText = y + h * (kind === 'triangle' ? 0.66 : kind === 'star' ? 0.56 : 0.5);
+        shapes.push({ kind: 'text', x: x + w / 2, y: cyText - ((lines.length - 1) * lh) / 2 + fs * 0.35, lines, fontSize: fs, fill: C.ink, anchor: 'middle', lineHeight: lh });
+      }
+      return shapes;
+    }
     case 'region': {
       const shapes: Shape[] = [{ kind: 'rect', x, y, width: w, height: h, rx: 4, fill: fill ?? C.region, stroke: C.line, strokeWidth: 1.5, dash: '6 4' }];
       const t = label || el.name;
@@ -117,7 +138,7 @@ export function describeElement(el: SketchElement, assetHref?: string): Shape[] 
     case 'connector': {
       const { a, b } = connectorEnds(el);
       const kind = el.props.connectorKind ?? 'plain';
-      const shapes: Shape[] = [{ kind: 'line', x1: a.x, y1: a.y, x2: b.x, y2: b.y, stroke: CONNECTOR_COLORS[kind], strokeWidth: 2, dash: kind === 'dataflow' ? '7 5' : undefined, arrow: kind !== 'plain' }];
+      const shapes: Shape[] = [{ kind: 'line', x1: a.x, y1: a.y, x2: b.x, y2: b.y, stroke: el.props.stroke ?? CONNECTOR_COLORS[kind], strokeWidth: 2, dash: kind === 'dataflow' ? '7 5' : undefined, arrow: kind !== 'plain' }];
       if (label) shapes.push({ kind: 'text', x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 - 6, lines: [label], fontSize: 12, fill: CONNECTOR_COLORS[kind], anchor: 'middle' });
       return shapes;
     }
