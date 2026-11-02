@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { addElements, createElement, createProject, deleteElements, groupElements, hitAt, recognizeShape, type StrokePoint } from '@sketch/core';
+import { addElements, createElement, createProject, deleteElements, enclosedRegion, groupElements, hitAt, recognizeShape, type Stroke, type StrokePoint } from '@sketch/core';
 
 // 손떨림 흉내: 고정 씨앗 난수
 function rng(seed: number) {
@@ -72,13 +72,78 @@ describe('모형 인식', () => {
     expect(recognizeShape(trace([[200, 100], [300, 260], [100, 260]]))?.kind).toBe('triangle');
     expect(recognizeShape(trace([[200, 100], [300, 200], [200, 300], [100, 200]]))?.kind).toBe('diamond');
   });
-  it('글씨·열린 선·작은 고리·낙서는 바꾸지 않는다', () => {
+  it('글씨·열린 선·작은 고리는 바꾸지 않는다', () => {
     expect(recognizeShape(trace([[100, 100], [140, 160], [180, 100], [220, 160], [260, 100]], 15, 2, 3, false))).toBeUndefined();
     expect(recognizeShape(ellipse(200, 200, 80, 80, 2, 0.6))).toBeUndefined();
     expect(recognizeShape(ellipse(200, 200, 12, 12))).toBeUndefined();
     expect(recognizeShape(trace([[100, 100], [300, 102]], 30, 2, 4, false))).toBeUndefined();
-    const scribble = [...ellipse(200, 200, 80, 80), ...ellipse(200, 200, 70, 75), ...ellipse(200, 200, 85, 60)];
-    expect(recognizeShape(scribble)).toBeUndefined();
+    // 따로 떨어진 네모·원·별을 한꺼번에 보면 아무것도 아니다 (2026-11-02 브라우저 시험에서 넓은 별로 잘못 봄)
+    const rectS = trace([[100, 100], [300, 100], [300, 220], [100, 220]], 8, 0, 9);
+    expect(recognizeShape([rectS, ellipse(500, 200, 80, 80), trace(starOutline(850, 220, 100), 5, 0, 9)])).toBeUndefined();
+    // ㄷ 만 (왼쪽 변 없음) 은 네모가 아니다
+    expect(recognizeShape([trace([[100, 100], [260, 100], [260, 220], [100, 220]], 20, 2, 5, false)])).toBeUndefined();
+  });
+});
+
+// 사용자 그림(2026-11-02)에서 본 그리기 방식
+describe('여러 획·삐져나온 꼬리', () => {
+  const open = (vs: [number, number][], seed: number) => trace(vs, 20, 3, seed, false);
+  it('네모를 ㄷ + | 두 획으로 (세로선이 위아래로 삐져나옴)', () => {
+    const s = recognizeShape([open([[110, 100], [260, 100], [262, 220], [110, 222]], 11), open([[105, 85], [106, 235]], 12)]);
+    expect(s?.kind).toBe('rect');
+    expect(Math.abs(s!.y - 100)).toBeLessThan(12);
+    expect(Math.abs(s!.height - 120)).toBeLessThan(20);
+  });
+  it('네모를 ㄱ + ㄴ, 네 변 따로, 아랫변이 길게 삐져나옴', () => {
+    expect(recognizeShape([open([[100, 100], [250, 98], [252, 230]], 13), open([[100, 100], [101, 230], [250, 231]], 14)])?.kind).toBe('rect');
+    expect(
+      recognizeShape([open([[100, 100], [250, 100]], 1), open([[250, 95], [250, 230]], 2), open([[255, 230], [100, 230]], 3), open([[100, 235], [100, 100]], 4)])?.kind,
+    ).toBe('rect');
+    expect(recognizeShape([open([[100, 100], [100, 230]], 5), open([[100, 100], [240, 100], [240, 220]], 6), open([[110, 228], [290, 222]], 7)])?.kind).toBe('rect');
+  });
+  it('직각 세모를 두 획으로 -- 꼭짓점이 그린 대로', () => {
+    const s = recognizeShape([open([[200, 100], [120, 220], [260, 218]], 21), open([[195, 95], [262, 222]], 22)]);
+    expect(s?.kind).toBe('triangle');
+    expect(s!.vertices).toHaveLength(3);
+  });
+  it('한붓 오각별의 마지막 획이 시작점을 지나 삐져나와도 별', () => {
+    const v = (i: number): [number, number] => {
+      const a = -Math.PI / 2 + (i * 4 * Math.PI) / 5;
+      return [200 + 100 * Math.cos(a), 200 + 100 * Math.sin(a)];
+    };
+    const pts = trace([v(0), v(1), v(2), v(3), v(4), v(0)], 25, 3, 31, false);
+    const [x0, y0] = v(0);
+    const [x1, y1] = v(1);
+    pts.push([x0 + (x1 - x0) * 0.2, y0 + (y1 - y0) * 0.2]); // 다시 한 번 그어 넘침
+    expect(recognizeShape(pts)?.kind).toBe('star');
+  });
+  it('끝에 갈고리가 달린 타원', () => {
+    const pts = ellipse(200, 200, 110, 60, 3, 1.0);
+    pts.unshift([300, 140], [305, 150]);
+    expect(recognizeShape(pts)?.kind).toBe('ellipse');
+  });
+});
+
+describe('막힌 곳 채우기', () => {
+  const loop = (pts: [number, number][]): Stroke => ({ id: 's' + pts.length, color: '#000', width: 3, points: pts });
+  it('손으로 그린 닫힌 네모 안은 막힌 곳 -- 테두리와 넓이', () => {
+    const r = enclosedRegion([loop([[100, 100], [300, 100], [300, 200], [100, 200], [100, 100]])], 1440, 900, { x: 200, y: 150 });
+    expect(r).toBeTruthy();
+    expect(r!.area).toBeGreaterThan(150 * 70);
+    const xs = r!.points.map((p) => p[0]);
+    expect(Math.min(...xs)).toBeLessThan(110);
+    expect(Math.max(...xs)).toBeGreaterThan(290);
+  });
+  it('조금 떨어진 틈(8px)은 막힌 것으로, 크게 열린 곳은 아니다', () => {
+    const gap = [loop([[100, 100], [300, 100], [300, 200], [100, 200], [100, 108]])];
+    expect(enclosedRegion(gap, 1440, 900, { x: 200, y: 150 })).toBeTruthy();
+    const open = [loop([[100, 100], [300, 100], [300, 200], [100, 200], [100, 160]])];
+    expect(enclosedRegion(open, 1440, 900, { x: 200, y: 150 })).toBeUndefined();
+    expect(enclosedRegion(gap, 1440, 900, { x: 600, y: 600 })).toBeUndefined();
+  });
+  it('여러 획으로 둘러싼 곳도 막힌 곳', () => {
+    const s = [loop([[100, 100], [300, 100], [300, 200]]), { ...loop([[300, 200], [100, 200], [100, 100]]), id: 'b' }];
+    expect(enclosedRegion(s, 1440, 900, { x: 200, y: 150 })).toBeTruthy();
   });
 });
 

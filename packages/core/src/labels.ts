@@ -21,6 +21,7 @@ export const SHAPE_LABELS: Record<ShapeKind, string> = {
   star: '별',
   triangle: '세모',
   diamond: '마름모',
+  polygon: '칠한 영역',
 };
 
 export const TRIGGER_LABELS: Record<Trigger, string> = {

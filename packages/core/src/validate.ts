@@ -149,6 +149,12 @@ function readElement(r: Reader, raw: unknown): SketchElement | undefined {
     const pr = r.at('props');
     const sk = pr.oneOf(propsRaw, 'shapeKind', SHAPE_KINDS, true);
     if (sk) props.shapeKind = sk;
+    if (propsRaw.vertices !== undefined) {
+      const vs = propsRaw.vertices;
+      const ok = Array.isArray(vs) && vs.length >= 3 && vs.length <= 2000 && vs.every((v) => Array.isArray(v) && v.length === 2 && v.every((n) => typeof n === 'number' && Number.isFinite(n) && n >= -0.05 && n <= 1.05));
+      if (ok) props.vertices = vs;
+      else pr.at('vertices').fail('꼭짓점 목록이 올바르지 않습니다');
+    }
     for (const k of ['fill', 'stroke'] as const) {
       const v = pr.str(propsRaw, k, { optional: true, max: 40 });
       if (v !== undefined && !COLOR_RE.test(v)) pr.at(k).fail('색 형식이 아닙니다');

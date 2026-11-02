@@ -6,3 +6,4 @@ export * from './validate.ts';
 export * from './digest.ts';
 export * from './geometry.ts';
 export * from './recognize.ts';
+export * from './fillregion.ts';

@@ -78,7 +78,7 @@ export function describeElement(el: SketchElement, assetHref?: string): Shape[] 
       const shapes: Shape[] = [];
       if (kind === 'rect') shapes.push({ kind: 'rect', x, y, width: w, height: h, rx: 3, fill: sf, stroke, strokeWidth: 2 });
       else if (kind === 'ellipse') shapes.push({ kind: 'ellipse', cx: x + w / 2, cy: y + h / 2, rx: w / 2, ry: h / 2, fill: sf, stroke, strokeWidth: 2 });
-      else shapes.push({ kind: 'polygon', points: (shapeOutline(kind) ?? []).map(([u, v]) => [x + u * w, y + v * h]), fill: sf, stroke, strokeWidth: 2 });
+      else shapes.push({ kind: 'polygon', points: (shapeOutline(kind, el.props.vertices) ?? []).map(([u, v]) => [x + u * w, y + v * h]), fill: sf, stroke, strokeWidth: stroke === 'none' ? 0 : 2 });
       if (label) {
         // 모형 안쪽 가운데에 글 (별·세모는 안쪽이 좁다)
         const inner = kind === 'rect' ? 0.86 : kind === 'ellipse' || kind === 'diamond' ? 0.68 : 0.46;

@@ -12,7 +12,8 @@
 | 요소 | element (`SketchElement`) | 종류는 아래 9가지 + 묶음 |
 | 영역 · 텍스트 · 버튼 · 입력창 · 목록 · 카드 · 이미지 · 메모 · 연결선 | region · text · button · input · list · card · image · note · connector | `ElementType` |
 | 묶음 | group | 자식은 `parentId` 로 가리킴 |
-| 모형 (네모 · 원 · 별 · 세모 · 마름모) | shape (props.shapeKind: rect · ellipse · star · triangle · diamond) | 손으로 그리면 알아봄 (`recognizeShape`) |
+| 모형 (네모 · 원 · 별 · 세모 · 마름모) | shape (props.shapeKind: rect · ellipse · star · triangle · diamond) | 손으로 그리고 펜을 멈추면 알아봄 (`recognizeShape`, 여러 획) |
+| 칠한 영역 | shape (props.shapeKind: polygon, props.vertices) | 손으로 둘러싼 곳 채우기 (`enclosedRegion`) |
 | 바탕색 · 채운 색 · 선 색 | screen.background · props.fill · props.stroke | |
 | 채우기 · 스포이트 · 색 팝업 | tool `fill` · `eyedropAt` · `ColorPopup` | |
 | 펜촉에서 먼 버튼 · 가까운 버튼 | pen slot `far` · `near` | 등록은 localStorage `ai-screen-sketch.penButtons` |

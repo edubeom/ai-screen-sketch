@@ -40,13 +40,15 @@ export interface ElementProps {
   fill?: string;
   /** shape: 모형 종류 */
   shapeKind?: ShapeKind;
-  /** shape·connector: 선 색 (없으면 기본색) */
+  /** shape·connector: 선 색 (없으면 기본색, none = 선 없음) */
   stroke?: string;
+  /** shape(세모·칠한 영역): 꼭짓점 (상자 0~1 기준) */
+  vertices?: [number, number][];
 }
 
 /** 손으로 그린 선을 알아보고 바꾸는 모형 */
-export type ShapeKind = 'rect' | 'ellipse' | 'star' | 'triangle' | 'diamond';
-export const SHAPE_KINDS: ShapeKind[] = ['rect', 'ellipse', 'star', 'triangle', 'diamond'];
+export type ShapeKind = 'rect' | 'ellipse' | 'star' | 'triangle' | 'diamond' | 'polygon';
+export const SHAPE_KINDS: ShapeKind[] = ['rect', 'ellipse', 'star', 'triangle', 'diamond', 'polygon'];
 
 export interface SketchElement {
   id: string;

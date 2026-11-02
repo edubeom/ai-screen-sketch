@@ -124,11 +124,13 @@ test('손으로 그린 네모·원·별이 모형이 되고, 가운데를 누르
     star.push([850 + r * Math.cos(a), 220 + r * Math.sin(a)]);
   }
   await drawPath(page, polyPath(star, 5));
+  // 펜을 멈추면(0.7초) 알아본다
+  await page.waitForTimeout(1200);
   let s = await state(page);
   const shapes = screenOf(s).elements.filter((e) => e.type === 'shape');
-  expect(shapes.map((e) => e.props.shapeKind)).toEqual(['rect', 'ellipse', 'star']);
+  expect(shapes.map((e) => e.props.shapeKind).sort()).toEqual(['ellipse', 'rect', 'star']);
   expect(screenOf(s).strokes).toHaveLength(0);
-  const rect = shapes[0];
+  const rect = shapes.find((e) => e.props.shapeKind === 'rect')!;
   expect(Math.abs(rect.x - 100)).toBeLessThan(6);
   expect(Math.abs(rect.width - 200)).toBeLessThan(10);
   // 펜으로 원 가운데를 톡 → 글 쓰기
@@ -141,17 +143,63 @@ test('손으로 그린 네모·원·별이 모형이 되고, 가운데를 누르
   expect(screenOf(s).elements.find((e) => e.props.shapeKind === 'ellipse')!.text).toBe('로그인');
   // Ctrl+Z 를 거듭하면 모형 → 손그림으로 돌아간다
   await page.keyboard.press('Control+z'); // 글
-  await page.keyboard.press('Control+z'); // 별 → 손그림
+  await page.keyboard.press('Control+z'); // 마지막으로 바꾼 모형 → 손그림
   s = await state(page);
   expect(screenOf(s).elements.filter((e) => e.type === 'shape')).toHaveLength(2);
   expect(screenOf(s).strokes).toHaveLength(1);
   if (SHOTS) await page.screenshot({ path: `${SHOTS}/pen-shapes.png` });
 });
 
+test('네모·세모를 여러 획으로 그려도 펜을 멈추면 모형이 된다', async ({ page }) => {
+  await ready(page);
+  await page.keyboard.press('p');
+  // ㄷ + | (세로선이 위아래로 삐져나옴)
+  await drawPath(page, [[110, 100], [180, 101], [260, 100], [261, 160], [262, 220], [180, 221], [110, 222]]);
+  await drawPath(page, [[105, 85], [105, 160], [106, 235]]);
+  await page.waitForTimeout(1200);
+  // 직각 세모 두 획
+  await drawPath(page, [[600, 100], [560, 160], [520, 220], [600, 219], [660, 218]]);
+  await drawPath(page, [[598, 96], [630, 160], [662, 222]]);
+  await page.waitForTimeout(1200);
+  const s = await state(page);
+  expect(screenOf(s).elements.map((e) => e.props.shapeKind)).toEqual(['rect', 'triangle']);
+  expect(screenOf(s).strokes).toHaveLength(0);
+  if (SHOTS) await page.screenshot({ path: `${SHOTS}/pen-multistroke.png` });
+});
+
+test('손으로 둘러싼 곳을 채우면 그 안만 칠해지고, 바깥은 바탕', async ({ page }) => {
+  await ready(page);
+  await page.keyboard.press('p');
+  await page.getByTestId('recognize').uncheck();
+  // 하트처럼 모형이 아닌 닫힌 모양, 두 획
+  await drawPath(page, [[300, 200], [260, 150], [200, 160], [190, 230], [300, 330]]);
+  await drawPath(page, [[300, 200], [340, 150], [400, 160], [410, 230], [302, 332]]);
+  await page.keyboard.press('f');
+  let c = await toClient(page, 300, 250);
+  await page.mouse.click(c.x, c.y);
+  let s = await state(page);
+  const filled = screenOf(s).elements.find((e) => e.props.shapeKind === 'polygon')!;
+  expect(filled).toBeTruthy();
+  expect(filled.props.fill).toBe(s.color);
+  expect(filled.x).toBeGreaterThan(180);
+  expect(filled.x + filled.width).toBeLessThan(420);
+  expect(screenOf(s).background).toBeUndefined();
+  // 같은 곳을 다시 누르면 새로 겹치지 않고 그 색만 바뀐다
+  c = await toClient(page, 300, 250);
+  await page.mouse.click(c.x, c.y);
+  s = await state(page);
+  expect(screenOf(s).elements.filter((e) => e.props.shapeKind === 'polygon')).toHaveLength(1);
+  c = await toClient(page, 800, 600);
+  await page.mouse.click(c.x, c.y);
+  expect(screenOf(await state(page)).background).toBeTruthy();
+  if (SHOTS) await page.screenshot({ path: `${SHOTS}/pen-enclosed.png` });
+});
+
 test('채우기·색 팝업·스포이트, 바탕 칠하기', async ({ page }) => {
   await ready(page);
   await page.keyboard.press('p');
   await drawPath(page, polyPath([[100, 100], [300, 100], [300, 220], [100, 220]]));
+  await page.waitForTimeout(1200);
   // 색 팝업: 최근 4 · 기본 16 · 색 판
   await page.getByTestId('current-color').click();
   const popup = page.getByTestId('color-popup');
@@ -219,4 +267,13 @@ test('펜 버튼: 가까운 버튼 1·2·3번 = 실행 취소·다시 실행·�
   await page.keyboard.press('F9');
   await page.waitForTimeout(500);
   expect((await state(page)).tool).toBe('fill');
+  // 조합 키(Ctrl+Alt+1) 등록 · 받은 입력 기록
+  await page.getByRole('button', { name: '펜 버튼' }).click();
+  await page.getByTestId('learn-near').click();
+  await page.keyboard.press('Control+Alt+Digit1');
+  await expect(page.getByTestId('pen-buttons')).toContainText('키보드 Ctrl+Alt+1');
+  await page.evaluate(() => window.dispatchEvent(new PointerEvent('pointerdown', { button: 3, pointerType: 'mouse', clientX: 10, clientY: 10 })));
+  await expect(page.getByTestId('raw-log')).toContainText('마우스 button=3');
+  await expect(page.getByTestId('raw-log')).toContainText('키 Ctrl+Alt+1');
+  if (SHOTS) await page.screenshot({ path: `${SHOTS}/pen-dialog.png` });
 });

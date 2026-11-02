@@ -47,6 +47,16 @@ export function PenButtonsDialog({ onClose }: { onClose: () => void }) {
         <div className="callout">
           <b>눌러 보기</b> -- {st.lastInput || '펜 버튼을 누르면 여기에 무엇을 받았는지 나옵니다'}
         </div>
+        <h3>받은 입력 (최신이 위)</h3>
+        <pre className="raw-log" data-testid="raw-log">{st.rawLog.length ? st.rawLog.join('\n') : '이 창을 연 채로 펜으로 누르거나 펜 버튼·마우스 버튼·키를 눌러 보세요.\n아무것도 안 나오면 그 입력은 이 브라우저까지 오지 않는 것입니다.'}</pre>
+        <details className="remote-help">
+          <summary>원격 데스크톱(mRemoteNG 등)으로 쓰는 경우</summary>
+          <ul>
+            <li>원격으로 쓰면 펜이 보통 <b>마우스</b>로 바뀌어 옵니다 (위 기록에 "마우스", 필압 없음). 펜 옆 버튼 신호는 원격 연결에서 빠지는 경우가 많습니다.</li>
+            <li><b>가장 확실한 방법</b>: 태블릿이 꽂힌 컴퓨터의 VEIKK 드라이버에서 두 버튼을 <b>키보드 키</b>(예: F9, F10 또는 Ctrl+Alt+1)로 바꾸고, 여기서 <b>등록</b>하세요. 키보드는 원격 연결로도 그대로 전달됩니다.</li>
+            <li>펜 필압·옆 버튼까지 쓰려면 원격 대신, 태블릿이 꽂힌 컴퓨터의 브라우저로 이 앱 주소를 직접 여세요.</li>
+          </ul>
+        </details>
         <p className="muted">
           VEIKK 드라이버에서 버튼이 "마우스 오른쪽/가운데 클릭"이나 "키보드 키"(예: F9, F10)로 되어 있으면 그대로 등록됩니다.
           "지우개 전환"·"펜/마우스 전환"처럼 드라이버 안에서만 쓰는 기능으로 되어 있으면 브라우저가 받지 못하니, 드라이버에서 키보드 키로 바꿔 주세요.

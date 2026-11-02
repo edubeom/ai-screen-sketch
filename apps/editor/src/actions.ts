@@ -12,6 +12,7 @@ import {
   duplicateElements,
   duplicateScreen as duplicateScreenOp,
   groupElements,
+  enclosedRegion,
   hitAt,
   mapScreen,
   sortedElements as sortedEls,
@@ -351,6 +352,34 @@ export function fillAt(p: { x: number; y: number }) {
   if (hit && 'stroke' in hit) {
     const id = hit.stroke.id;
     updateScreen((x) => ({ ...x, strokes: x.strokes.map((st) => (st.id === id ? { ...st, color } : st)) }));
+    return;
+  }
+  // 손으로 그린 선이 둘러싼 곳이면 그 자리만 칠한다 (그 안에 있는 요소보다 좁을 때)
+  const region = enclosedRegion(sc.strokes, sc.width, sc.height, p);
+  const hitEl = hit && 'element' in hit ? hit.element : undefined;
+  const hitArea = hitEl ? hitEl.width * hitEl.height : Infinity;
+  // 이미 칠한 영역을 다시 누르면 그 색만 바꾼다
+  const refill = hitEl?.type === 'shape' && hitEl.props.shapeKind === 'polygon';
+  if (region && !refill && region.area < hitArea) {
+    const xs = region.points.map((q) => q[0]);
+    const ys = region.points.map((q) => q[1]);
+    const x = Math.min(...xs);
+    const y = Math.min(...ys);
+    const w = Math.max(1, Math.max(...xs) - x);
+    const h = Math.max(1, Math.max(...ys) - y);
+    const el = createElement('shape', x, y, {
+      width: Math.round(w),
+      height: Math.round(h),
+      name: '칠한 영역',
+      text: '',
+      props: { shapeKind: 'polygon', fill: color, stroke: 'none', vertices: region.points.map(([px, py]) => [Math.round(((px - x) / w) * 1000) / 1000, Math.round(((py - y) / h) * 1000) / 1000]) },
+    });
+    // createElement 가 반올림한 자리를 테두리 그대로로 되돌린다
+    el.x = x;
+    el.y = y;
+    el.width = w;
+    el.height = h;
+    updateScreen((x2) => addElements(x2, [el]));
     return;
   }
   if (hit && 'element' in hit) {

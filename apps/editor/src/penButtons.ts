@@ -5,7 +5,9 @@ import { getState, loadPref, redo, savePref, setState, toast, undo } from './sto
 import { eyedropAt, getCanvasApi, setTool, toggleEraser } from './actions.ts';
 
 export type PenSlot = 'far' | 'near';
-export type PenBinding = { kind: 'pointer'; button: number; pointerType: string } | { kind: 'key'; code: string };
+export type PenBinding =
+  | { kind: 'pointer'; button: number; pointerType: string }
+  | { kind: 'key'; code: string; ctrl?: boolean; alt?: boolean; shift?: boolean; meta?: boolean };
 
 /** 펜촉에서 먼 버튼 · 가까운 버튼의 기본값 (Windows Ink 펜: 옆 버튼 = 2, 지우개/둘째 버튼 = 5 또는 1) */
 export const DEFAULT_BINDINGS: Record<PenSlot, PenBinding[]> = {
@@ -29,6 +31,22 @@ const BIT: Record<number, number> = { 0: 1, 1: 4, 2: 2, 3: 8, 4: 16, 5: 32 };
 let bindings: Record<PenSlot, PenBinding[]> = loadPref('penButtons', DEFAULT_BINDINGS);
 let learning: PenSlot | undefined;
 let lastInput = '';
+/** 브라우저가 받은 입력 기록 (최신이 위, 12개) -- 원격 데스크톱 등에서 무엇이 오는지 보기 */
+let rawLog: string[] = [];
+function logRaw(line: string) {
+  const t = new Date();
+  const stamp = `${String(t.getMinutes()).padStart(2, '0')}:${String(t.getSeconds()).padStart(2, '0')}.${String(t.getMilliseconds()).padStart(3, '0').slice(0, 1)}`;
+  rawLog = [`${stamp}  ${line}`, ...rawLog].slice(0, 12);
+  notify();
+}
+const TYPE_KO: Record<string, string> = { pen: '펜', mouse: '마우스', touch: '터치' };
+function describePointer(e: PointerEvent) {
+  return `${TYPE_KO[e.pointerType] ?? e.pointerType} button=${e.button} buttons=${e.buttons}${e.pointerType === 'pen' ? ` 필압=${e.pressure.toFixed(2)}` : ''}`;
+}
+function keyName(b: { code: string; ctrl?: boolean; alt?: boolean; shift?: boolean; meta?: boolean }) {
+  const code = b.code.replace(/^Key([A-Z])$/, '$1').replace(/^Digit(\d)$/, '$1');
+  return [b.ctrl && 'Ctrl', b.alt && 'Alt', b.shift && 'Shift', b.meta && 'Meta', code].filter(Boolean).join('+');
+}
 const lastPointer = { x: 200, y: 200 };
 let lastBoundAt = 0;
 const counters: Record<PenSlot, { n: number; timer?: ReturnType<typeof setTimeout> }> = { far: { n: 0 }, near: { n: 0 } };
@@ -41,11 +59,11 @@ export function subscribePen(l: Listener) {
   return () => listeners.delete(l);
 }
 export function penState() {
-  return { bindings, learning, lastInput };
+  return { bindings, learning, lastInput, rawLog };
 }
 
 export function describeBinding(b: PenBinding): string {
-  if (b.kind === 'key') return `키보드 ${b.code}`;
+  if (b.kind === 'key') return `키보드 ${keyName(b)}`;
   const name = { 1: '가운데 버튼', 2: '오른쪽(옆) 버튼', 3: '뒤로 버튼', 4: '앞으로 버튼', 5: '지우개 버튼' }[b.button] ?? `버튼 ${b.button}`;
   return `${b.pointerType === 'pen' ? '펜' : b.pointerType === 'mouse' ? '마우스' : b.pointerType} ${name}`;
 }
@@ -74,7 +92,7 @@ function learn(b: PenBinding) {
 
 function slotFor(b: PenBinding): PenSlot | undefined {
   for (const slot of ['far', 'near'] as const) {
-    if (bindings[slot].some((x) => (x.kind === 'key' && b.kind === 'key' ? x.code === b.code : x.kind === 'pointer' && b.kind === 'pointer' && x.button === b.button && x.pointerType === b.pointerType))) return slot;
+    if (bindings[slot].some((x) => (x.kind === 'key' && b.kind === 'key' ? keyName(x) === keyName(b) : x.kind === 'pointer' && b.kind === 'pointer' && x.button === b.button && x.pointerType === b.pointerType))) return slot;
   }
   return undefined;
 }
@@ -140,7 +158,17 @@ export function installPenButtons() {
     (e) => {
       lastPointer.x = e.clientX;
       lastPointer.y = e.clientY;
+      logRaw(`누름 ${describePointer(e)}`);
       if (e.button > 0) onPointerPress(e, e.button);
+    },
+    true,
+  );
+  window.addEventListener(
+    'pointerup',
+    (e) => {
+      if (e.button > 0) logRaw(`뗌 ${describePointer(e)}`);
+      // 뒤로·앞으로 버튼을 등록했으면 브라우저가 페이지를 넘기지 않게
+      if (e.button > 0 && (learning || Date.now() - lastBoundAt < 1000)) e.preventDefault();
     },
     true,
   );
@@ -150,7 +178,10 @@ export function installPenButtons() {
       lastPointer.x = e.clientX;
       lastPointer.y = e.clientY;
       // 펜이 닿은 채로 옆 버튼을 누르면 pointerdown 없이 button 이 바뀐 pointermove 로 온다
-      if (e.button > 0 && e.buttons & (BIT[e.button] ?? 0)) onPointerPress(e, e.button);
+      if (e.button > 0 && e.buttons & (BIT[e.button] ?? 0)) {
+        logRaw(`누른 채 버튼 ${describePointer(e)}`);
+        onPointerPress(e, e.button);
+      }
     },
     true,
   );
@@ -158,15 +189,17 @@ export function installPenButtons() {
     'keydown',
     (e) => {
       if (['Shift', 'Control', 'Alt', 'Meta'].includes(e.key) || e.repeat) return;
+      const key = { kind: 'key' as const, code: e.code, ...(e.ctrlKey && { ctrl: true }), ...(e.altKey && { alt: true }), ...(e.shiftKey && { shift: true }), ...(e.metaKey && { meta: true }) };
+      logRaw(`키 ${keyName(key)}`);
       if (learning) {
         if (e.key === 'Escape') return startLearning(undefined);
-        learn({ kind: 'key', code: e.code });
+        learn(key);
         e.preventDefault();
         e.stopImmediatePropagation();
         return;
       }
       if (typing(e.target)) return;
-      const slot = slotFor({ kind: 'key', code: e.code });
+      const slot = slotFor(key);
       if (!slot) return;
       pressSlot(slot);
       e.preventDefault();
@@ -176,6 +209,7 @@ export function installPenButtons() {
   );
   // 펜 버튼이 마우스 오른쪽 클릭으로 오면 메뉴가 뜨지 않게
   window.addEventListener('contextmenu', (e) => {
+    logRaw('오른쪽 메뉴(contextmenu)');
     if (learning || Date.now() - lastBoundAt < 1000) e.preventDefault();
   });
   window.addEventListener('auxclick', (e) => {

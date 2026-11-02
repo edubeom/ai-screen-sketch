@@ -198,3 +198,7 @@ kbd { border: 1px solid var(--line-strong); border-bottom-width: 2px; border-rad
 .cp-hex { flex: 1; min-width: 0; border: 1px solid var(--line-strong); border-radius: 4px; padding: 3px 6px; font-family: ui-monospace, monospace; }
 .pen-slot { border-top: 1px solid var(--line); }
 .pen-slot ol { margin: 0 0 4px; padding-left: 18px; }
+.raw-log { background: #0f172a; color: #e2e8f0; font: 12px/1.5 ui-monospace, monospace; padding: 8px 10px; border-radius: 6px; max-height: 190px; overflow: auto; white-space: pre-wrap; margin: 4px 0 8px; }
+.remote-help { margin: 8px 0; font-size: 12px; }
+.remote-help summary { cursor: pointer; font-weight: 700; }
+.remote-help ul { padding-left: 18px; color: var(--muted); }

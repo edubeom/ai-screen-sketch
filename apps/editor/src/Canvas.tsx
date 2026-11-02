@@ -30,6 +30,7 @@ import {
   type Rect,
   type Screen,
   type SketchElement,
+  type Stroke,
   type StrokePoint,
 } from '@sketch/core';
 import { arrowMarkers } from '@sketch/exporters';
@@ -66,6 +67,11 @@ interface Pt {
 }
 
 const HANDLES: Handle[] = ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w'];
+
+/** 펜을 이만큼 쉬면 모형인지 본다 */
+const PAUSE_MS = 700;
+/** 앞 획과 이 시간 안에 그린 획끼리 묶어 본다 */
+const PENDING_MS = 8000;
 
 function handlePos(r: Rect, h: Handle): Pt {
   const cx = r.x + r.width / 2;
@@ -125,6 +131,8 @@ export function Canvas({ onPenButtons }: { onPenButtons: () => void }) {
   const spaceDown = useRef(false);
   const penSeen = useRef(false);
   const [editing, setEditing] = useState<string>();
+  const pending = useRef<{ id: string; at: number }[]>([]);
+  const recognizeTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   const screen = useEditor((s) => currentScreen(s));
   const project = useEditor((s) => s.project);
@@ -241,6 +249,7 @@ export function Canvas({ onPenButtons }: { onPenButtons: () => void }) {
       // 펜을 쓴 기기에서는 손가락(손바닥) 입력으로 그리지 않는다
       if (e.pointerType === 'touch' && penSeen.current) return;
       svg.setPointerCapture(e.pointerId);
+      clearTimeout(recognizeTimer.current); // 이어서 그리는 중이면 기다린다
       setD({ kind: 'pen', points: [pointOf(e, p)], startedAt: Date.now() });
       return;
     }
@@ -344,19 +353,45 @@ export function Canvas({ onPenButtons }: { onPenButtons: () => void }) {
     }
     const stroke = { id: newId('stk'), points: d.points, color: s.pen.color, width: s.pen.width };
     updateScreen((sc) => addStroke(sc, stroke));
-    if (!s.recognizeShapes) return;
-    const shape = recognizeShape(d.points);
-    if (!shape) return;
-    // 필기를 먼저 남기고 모형으로 바꾼다 -- Ctrl+Z 한 번이면 손으로 그린 선으로 돌아간다
-    const el = createElement('shape', shape.x, shape.y, {
-      width: shape.width,
-      height: shape.height,
-      name: SHAPE_LABELS[shape.kind],
-      text: '',
-      props: { shapeKind: shape.kind, stroke: s.pen.color },
-    });
-    updateScreen((sc) => addElements(deleteStroke(sc, stroke.id), [el]));
-    toast(`${SHAPE_LABELS[shape.kind]}로 바꿨습니다 -- 가운데를 누르면 글을 씁니다 (Ctrl+Z: 손그림으로)`);
+    // 펜이 잠깐 멈추면 방금 그린 획들을 묶어서 모형인지 본다 (네모·세모는 여러 획으로 그리니까)
+    const now = Date.now();
+    // 계속 그리는 동안(앞 획과 8초 안)은 묶음을 이어 간다. 오래 쉬었으면 새로 시작
+    const last = pending.current[pending.current.length - 1];
+    pending.current = [...(last && now - last.at < PENDING_MS ? pending.current : []), { id: stroke.id, at: now }].slice(-12);
+    clearTimeout(recognizeTimer.current);
+    recognizeTimer.current = setTimeout(recognizePending, PAUSE_MS);
+  };
+
+  /** 최근 획을 많은 것부터 묶어 보며 모형을 찾는다 (최대 6획). 찾으면 남은 획으로 다시 본다 */
+  const recognizePending = () => {
+    const s = getState();
+    if (!s.recognizeShapes || dragRef.current) return;
+    const found: string[] = [];
+    for (let round = 0; round < 6; round++) {
+      const sc = currentScreen();
+      const recent = pending.current.map((x) => sc.strokes.find((st) => st.id === x.id)).filter((x): x is Stroke => !!x);
+      let hit = false;
+      for (let k = Math.min(6, recent.length); k >= 1 && !hit; k--) {
+        const group = recent.slice(recent.length - k);
+        const shape = recognizeShape(group.map((g) => g.points));
+        if (!shape) continue;
+        hit = true;
+        const ids = new Set(group.map((g) => g.id));
+        const el = createElement('shape', shape.x, shape.y, {
+          width: shape.width,
+          height: shape.height,
+          name: SHAPE_LABELS[shape.kind],
+          text: '',
+          props: { shapeKind: shape.kind, stroke: group[group.length - 1].color, ...(shape.vertices ? { vertices: shape.vertices } : {}) },
+        });
+        // 손그림을 먼저 저장해 두었으니 Ctrl+Z 한 번이면 손그림으로 돌아간다
+        updateScreen((x) => addElements({ ...x, strokes: x.strokes.filter((st) => !ids.has(st.id)) }, [el]));
+        pending.current = pending.current.filter((x) => !ids.has(x.id));
+        found.push(`${SHAPE_LABELS[shape.kind]}${k > 1 ? `(${k}획)` : ''}`);
+      }
+      if (!hit) break;
+    }
+    if (found.length) toast(`${found.reverse().join(' · ')}로 바꿨습니다 -- 가운데를 누르면 글을 씁니다 (Ctrl+Z: 손그림으로)`);
   };
 
   const onPointerMove = (e: RPointerEvent<SVGSVGElement>) => {
