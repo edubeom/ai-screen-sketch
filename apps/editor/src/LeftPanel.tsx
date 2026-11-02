@@ -121,7 +121,7 @@ export function LeftPanel() {
       <section className="help">
         <h3>단축키</h3>
         <ul>
-          <li><kbd>V</kbd> 선택 · <kbd>P</kbd> 펜 · <kbd>E</kbd> 지우개 · <kbd>L</kbd> 동작 연결</li>
+          <li><kbd>V</kbd> 선택 · <kbd>P</kbd> 펜 · <kbd>E</kbd> 지우개 · <kbd>F</kbd> 채우기 · <kbd>L</kbd> 동작 연결</li>
           <li><kbd>Del</kbd> 지우기 · 방향키 1px · <kbd>Shift</kbd>+방향키 10px</li>
           <li><kbd>Ctrl/⌘</kbd>+<kbd>Z</kbd> 실행 취소 · +<kbd>Shift</kbd> 다시 실행</li>
           <li><kbd>Ctrl/⌘</kbd>+<kbd>C</kbd>/<kbd>V</kbd>/<kbd>D</kbd> 복사·붙여넣기·복제</li>

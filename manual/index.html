@@ -24,6 +24,7 @@
 .slide .card > i { color: var(--accent); }
 .slide .row.mid { align-items: center; }
 .slide .tight .item { padding: .2em .2em; }
+.slide .arrow-big { font-size: 2em; color: var(--muted); flex: 0 0 auto; }
 .slide .cover-mark { font-size: 3.4em; line-height: 1; letter-spacing: .1em; color: #c7e0cf; }
 </style>
 <script defer src="assets/manual.js"></script>
@@ -44,11 +45,11 @@
   <h2>다섯 부분으로 된 한 화면</h2>
   <div class="body">
     <div class="row mid">
-      <div class="screen shot" style="--h:14.38em;--w:23.00em"><img src="img/app-example.png" alt="예시 프로젝트를 연 전체 화면"></div>
-      <div class="kv"><b>위 막대</b><span>프로젝트 · 도구(선택·펜·지우개·동작 연결) · 확대 · 내보내기</span><b>왼쪽</b><span>화면 목록 · 요소 · 묶음 프리셋 · 단축키</span><b>가운데</b><span>작업판 -- 여기에 그립니다</span><b>오른쪽</b><span>고른 것의 이름·문구·동작·상태</span><b>아래</b><span>검증 결과 -- 빠진 것 알림</span></div>
+      <div class="screen shot" style="--h:14.38em;--w:23.00em"><img src="img/app-example.png" alt="예시 프로젝트를 연 전체 화면"><span class="hl" style="left:76.9%;top:0.7%;width:12.5%;height:3.4%"></span></div>
+      <div class="kv"><b>위 막대</b><span>프로젝트 · 도구(선택·펜·지우개·채우기·동작 연결) · 지금 색 · 확대 · 오른쪽 끝에 저장 표시·가져오기·내보내기</span><b>왼쪽</b><span>화면 목록 · 요소 · 묶음 프리셋 · 단축키</span><b>가운데</b><span>작업판 -- 여기에 그립니다</span><b>오른쪽</b><span>고른 것의 이름·문구·동작·상태</span><b>아래</b><span>검증 결과 -- 빠진 것 알림</span></div>
     </div>
   </div>
-  <aside class="notes">화면은 다섯 부분으로 나뉩니다. 위 막대에는 프로젝트 메뉴와 도구, 확대 버튼, 내보내기 버튼이 있습니다. 왼쪽에서 화면과 요소를 고르고, 가운데 작업판에 그립니다. 오른쪽에는 지금 고른 것의 설명과 동작이 나오고, 맨 아래에는 빠진 것을 알려 주는 검증 결과가 있습니다.</aside>
+  <aside class="notes">화면은 다섯 부분으로 나뉩니다. 위 막대에는 프로젝트 메뉴와 도구, 지금 색, 확대 버튼이 있고, 오른쪽 끝에는 저장 표시와 가져오기, 내보내기 버튼이 나란히 있습니다. 왼쪽에서 화면과 요소를 고르고, 가운데 작업판에 그립니다. 오른쪽에는 지금 고른 것의 설명과 동작이 나오고, 맨 아래에는 빠진 것을 알려 주는 검증 결과가 있습니다.</aside>
 </section>
 <section class="slide" data-kind="concept" data-title="한눈에 보기">
   <p class="kicker">한눈에 보기</p>
@@ -64,12 +65,12 @@
   <h2>받은 주소를 브라우저로 엽니다 → 빈 작업판</h2>
   <div class="body">
     <div class="row mid">
-      <div class="screen shot" style="--h:14.38em;--w:23.00em"><img src="img/app-new.png" alt="처음 연 화면"><span class="hl" style="left:9.7%;top:0.9%;width:6.2%;height:3.1%"></span><span class="hl" style="left:25.4%;top:1.0%;width:9.9%;height:2.9%"></span><span class="hl" style="left:28.3%;top:85.8%;width:36.7%;height:3.8%"></span></div>
+      <div class="screen shot" style="--h:14.38em;--w:23.00em"><img src="img/app-new.png" alt="처음 연 화면"><span class="hl" style="left:9.7%;top:0.8%;width:6.9%;height:3.2%"></span><span class="hl" style="left:77.2%;top:0.8%;width:12.5%;height:3.2%"></span><span class="hl" style="left:28.0%;top:85.4%;width:37.1%;height:4.3%"></span></div>
       <ol class="flow v"><li><b>주소 열기</b><span>설치한 사람이 알려 준 주소</span></li><li><b>새 프로젝트</b><span>처음엔 저절로 하나 생김</span></li><li><b>빈 작업판</b><span>가운데 아래 안내 문구</span></li></ol>
     </div>
-    <div class="callout"><b>이렇게 보이면 성공</b> · 위에 <b>새 프로젝트</b>, 옆에 초록색 <b>저장됨</b>, 가운데에 "왼쪽에서 요소를 끌어 놓거나 눌러서 추가하세요"</div>
+    <div class="callout"><b>이렇게 보이면 성공</b> · 왼쪽 위에 <b>새 프로젝트</b>, 오른쪽 위 <b>가져오기</b> 옆에 초록색 <b>저장됨</b>, 가운데에 "왼쪽에서 요소를 끌어 놓거나 눌러서 추가하세요"</div>
   </div>
-  <aside class="notes">시작하기 첫 번째 단계입니다. 이 도구를 설치해 준 사람이 알려 준 주소를 평소 쓰는 브라우저 주소창에 넣어 엽니다. 처음 열면 새 프로젝트가 저절로 하나 만들어지고, 가운데에 빈 작업판이 보입니다. 위쪽에 초록색 저장됨 표시가 보이면 제대로 열린 것입니다.</aside>
+  <aside class="notes">시작하기 첫 번째 단계입니다. 이 도구를 설치해 준 사람이 알려 준 주소를 평소 쓰는 브라우저 주소창에 넣어 엽니다. 처음 열면 새 프로젝트가 저절로 하나 만들어지고, 가운데에 빈 작업판이 보입니다. 오른쪽 위 가져오기 버튼 바로 왼쪽에 초록색 저장됨 표시가 보이면 제대로 열린 것입니다.</aside>
 </section>
 <section class="slide" data-kind="start-step" data-title="시작하기 2. 프로젝트 창 열기">
   <p class="kicker">시작하기 · 2 / 5</p>
@@ -101,7 +102,7 @@
   <div class="body">
     <div class="row mid">
       <div class="screen shot" style="--h:8.00em;--w:17.66em"><img src="img/projects.png" alt="예시 열기 버튼"><span class="hl" style="left:2.8%;top:41.7%;width:32.8%;height:12.4%"></span></div>
-      <div class="screen shot" style="--h:12.00em;--w:19.20em"><img src="img/app-example.png" alt="예시를 연 화면"><span class="hl" style="left:17.9%;top:15.1%;width:57.2%;height:57.6%"></span></div>
+      <div class="screen shot" style="--h:12.00em;--w:19.20em"><img src="img/app-example.png" alt="예시를 연 화면"><span class="hl" style="left:17.8%;top:15.0%;width:57.4%;height:57.7%"></span></div>
     </div>
     <div class="callout"><b>이렇게 보이면 성공</b> · 할 일 목록과 달력이 그려진 화면 2개, 보라색 동작 화살표, 아래에 경고·안내 몇 개가 보입니다</div>
   </div>
@@ -121,12 +122,12 @@
 </section>
 <section class="slide" data-kind="concept" data-title="저절로 저장됩니다">
   <p class="kicker">알아 두기</p>
-  <h2>고치면 바로 저장 -- 위쪽 표시를 봅니다</h2>
+  <h2>고치면 바로 저장 -- <span class="ui">가져오기</span> 옆 표시를 봅니다</h2>
   <div class="body">
-    <div class="screen shot" style="--h:2.60em;--w:28.71em"><img src="img/topbar-save.png" alt="위쪽 저장 표시"><span class="hl" style="left:71.3%;top:17.4%;width:28.7%;height:65.2%"></span></div>
-    <table class="grid"><tr><th>표시</th><th>뜻</th><th>할 일</th></tr><tr><td><span class="badge">변경됨</span> <span class="badge">저장 중…</span></td><td>방금 고친 것을 저장하는 중</td><td>잠깐 기다립니다</td></tr><tr><td><span class="badge ok">저장됨</span></td><td>이 브라우저에 저장 끝</td><td>그대로 닫아도 됩니다</td></tr><tr><td><span class="badge bad">저장 실패</span></td><td>저장하지 못함</td><td><span class="ui">다시 저장</span> 을 누르고, 안 되면 <b>내보내기</b>로 파일을 받아 둡니다</td></tr></table>
+    <div class="screen shot" style="--h:2.60em;--w:23.68em"><img src="img/topbar-save.png" alt="오른쪽 위 저장 표시"><span class="hl" style="left:21.5%;top:13.0%;width:43.0%;height:67.4%"></span></div>
+    <table class="grid"><tr><th>표시</th><th>뜻</th><th>할 일</th></tr><tr><td><span class="badge">변경됨</span> <span class="badge">저장 중…</span></td><td>방금 고친 것을 저장하는 중</td><td>잠깐 기다립니다</td></tr><tr><td><span class="badge ok">저장됨 r2 · 시각</span></td><td>이 브라우저에 저장 끝 (r 숫자 = 저장한 횟수, 시각 = 마지막 저장)</td><td>그대로 닫아도 됩니다</td></tr><tr><td><span class="badge bad">저장 실패</span></td><td>저장하지 못함</td><td><span class="ui">다시 저장</span> 을 누르고, 안 되면 <b>내보내기</b>로 파일을 받아 둡니다</td></tr></table>
   </div>
-  <aside class="notes">저장 버튼을 따로 누를 필요는 없습니다. 무언가 고치면 위쪽 표시가 저장 중으로 바뀌었다가 곧 초록색 저장됨으로 바뀝니다. 만약 빨간 저장 실패가 보이면 옆에 생기는 다시 저장 버튼을 누르세요. 그래도 안 되면 내보내기로 파일을 받아 두어야 그동안 그린 것을 잃지 않습니다.</aside>
+  <aside class="notes">저장 버튼을 따로 누를 필요는 없습니다. 무언가 고치면 오른쪽 위 가져오기 버튼 바로 왼쪽의 표시가 변경됨이나 저장 중으로 바뀌었다가 곧 초록색 저장됨으로 바뀝니다. 만약 빨간 저장 실패가 보이면 옆에 생기는 다시 저장 버튼을 누르세요. 그래도 안 되면 내보내기로 파일을 받아 두어야 그동안 그린 것을 잃지 않습니다.</aside>
 </section>
 <section class="slide" data-kind="concept" data-title="데이터는 어디에">
   <p class="kicker">데이터는 어디에</p>
@@ -144,7 +145,7 @@
   <p class="kicker">기능 목록</p>
   <h2>보고 싶은 기능을 누르세요</h2>
   <div class="body">
-    <div class="cards"><a class="card" href="sketch.html"><i>▭</i><b>그리기·필기</b><span>요소 넣기 · 옮기기 · 묶기 · 정렬 · 확대 · 펜과 지우개 (10단계)</span></a><a class="card" href="interaction.html"><i>↗</i><b>동작·상태·검증</b><span>동작 연결 · 칸 채우기 · 깨진 연결 · 상태 · 화면 메모 · 검증 결과 (10단계)</span></a><a class="card" href="export.html"><i>▤</i><b>내보내기·가져오기</b><span>전달 방식 · 그림 옵션 · ZIP 받기 · 백업 · 다시 열기 (8단계)</span></a></div>
+    <div class="cards"><a class="card" href="sketch.html"><i>▭</i><b>그리기·필기</b><span>요소 넣기 · 옮기기 · 묶기 · 정렬 · 확대 · 펜 · 모형 인식 · 채우기와 색 · 지우개 · 펜 버튼 (19단계)</span></a><a class="card" href="interaction.html"><i>↗</i><b>동작·상태·검증</b><span>동작 연결 · 칸 채우기 · 깨진 연결 · 상태 · 화면 메모 · 검증 결과 (10단계)</span></a><a class="card" href="export.html"><i>▤</i><b>내보내기·가져오기</b><span>전달 방식 · 그림 옵션 · ZIP 받기 · 백업 · 다시 열기 (8단계)</span></a></div>
   </div>
   <aside class="notes">기능별 설명서입니다. 그리기와 필기 장에서는 화면에 요소를 넣고 다듬는 법을, 동작과 상태와 검증 장에서는 버튼마다 무엇이 되는지 적는 법을 봅니다. 마지막 내보내기와 가져오기 장에서는 AI 에게 줄 묶음 파일을 만들고 백업하는 법을 다룹니다. 보고 싶은 기능을 누르세요.</aside>
 </section>
@@ -152,9 +153,9 @@
   <p class="kicker">바뀐 점</p>
   <h2>최근에 바뀐 것 (최신이 위)</h2>
   <div class="body">
-    <table class="grid"><tr><th>날짜</th><th>무엇이 바뀌었나</th></tr><tr><td>2026-11-02</td><td>처음 만듦 -- 시작하기 · 데이터는 어디에 · 그리기·필기 · 동작·상태·검증 · 내보내기·가져오기</td></tr></table>
+    <table class="grid"><tr><th>날짜</th><th>무엇이 바뀌었나</th></tr><tr><td>2026-11-02</td><td>모형 인식 · 채우기와 색 · 지우개로 무엇이든 지우기 · 펜 버튼 · 저장 표시 위치</td></tr><tr><td>2026-11-02</td><td>처음 만듦 -- 시작하기 · 데이터는 어디에 · 그리기·필기 · 동작·상태·검증 · 내보내기·가져오기</td></tr></table>
   </div>
-  <aside class="notes">바뀐 점입니다. 이 설명서는 2026년 11월 2일에 처음 만들었습니다. 시작하기와 데이터 저장 안내, 그리기와 필기, 동작과 상태와 검증, 내보내기와 가져오기 장이 들어 있습니다. 앞으로 사용 방법이 바뀌면 이 표의 맨 위에 한 줄씩 더합니다.</aside>
+  <aside class="notes">바뀐 점입니다. 맨 위 줄이 가장 최근에 바뀐 것으로, 펜으로 그린 네모나 원을 깔끔한 모형으로 바꿔 주는 모형 인식, 채우기와 색 고르기, 무엇이든 지우는 지우개, 펜 옆 버튼 설정이 새로 생겼고 저장 표시는 오른쪽 위로 옮겨졌습니다. 자세한 사용법은 그리기와 필기 장의 뒤쪽 단계에 있습니다. 그 아래 줄은 이 설명서를 처음 만든 기록이고, 앞으로 사용 방법이 바뀌면 이 표의 맨 위에 한 줄씩 더합니다.</aside>
 </section>
 
 </body>
