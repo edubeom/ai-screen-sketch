@@ -110,6 +110,39 @@ test('지우개로 필기·텍스트·상자 무엇이든 지우고, 실행 취�
   expect(screenOf(await state(page)).elements.map((e) => e.id)).toEqual([text.id]);
 });
 
+test('안쪽 원을 지우개로 누르면 원만 지워진다 -- 바깥 네모들은 그대로 (펜이 흔들려도)', async ({ page }) => {
+  await ready(page);
+  await page.keyboard.press('p');
+  // 사용자 그림(2026-11-03): 바깥 큰 네모 · 가운데 네모 · 그 안의 타원
+  await drawPath(page, polyPath([[30, 25], [765, 25], [765, 495], [30, 495]]));
+  await page.waitForTimeout(1000);
+  await drawPath(page, polyPath([[118, 212], [690, 212], [690, 326], [118, 326]]));
+  await page.waitForTimeout(1000);
+  const oval: [number, number][] = [];
+  for (let i = 0; i <= 40; i++) oval.push([234 + 56 * Math.cos((i / 40) * Math.PI * 2), 291 + 20 * Math.sin((i / 40) * Math.PI * 2)]);
+  await drawPath(page, oval);
+  await page.waitForTimeout(1000);
+  let s = await state(page);
+  expect(screenOf(s).elements.map((e) => e.props.shapeKind)).toEqual(['rect', 'rect', 'ellipse']);
+  await page.keyboard.press('e');
+  // 원 테두리를 누르고 조금 흔들다 뗀다
+  const c = await toClient(page, 234, 272);
+  await page.mouse.move(c.x, c.y);
+  await page.mouse.down();
+  for (const [dx, dy] of [[1, 1], [2, 3], [0, 5], [-2, 8], [1, 10]]) await page.mouse.move(c.x + dx, c.y + dy);
+  await page.mouse.up();
+  s = await state(page);
+  expect(screenOf(s).elements.map((e) => e.props.shapeKind)).toEqual(['rect', 'rect']);
+  // 네모 안쪽 빈 곳을 눌러도 네모는 지워지지 않는다
+  const inner = await toClient(page, 400, 270);
+  await page.mouse.click(inner.x, inner.y);
+  expect(screenOf(await state(page)).elements).toHaveLength(2);
+  // 테두리를 누르면 그 네모만
+  const edge = await toClient(page, 400, 212);
+  await page.mouse.click(edge.x, edge.y);
+  expect(screenOf(await state(page)).elements).toHaveLength(1);
+});
+
 test('손으로 그린 네모·원·별이 모형이 되고, 가운데를 누르면 글을 쓴다', async ({ page }) => {
   await ready(page);
   await page.keyboard.press('p');
@@ -267,6 +300,19 @@ test('펜 버튼: 가까운 버튼 1·2·3번 = 실행 취소·다시 실행·�
   await page.keyboard.press('F9');
   await page.waitForTimeout(500);
   expect((await state(page)).tool).toBe('fill');
+  // 펜을 띄운 채 옆 버튼: pointerdown 없이 buttons 만 바뀐 pointermove 로 오는 경우 → 가까운 버튼(2) 1번 = 실행 취소
+  await page.keyboard.press('v');
+  await page.getByTestId('palette-text').click();
+  const before = screenOf(await state(page)).elements.length;
+  await page.evaluate(() => {
+    const mv = (buttons: number) => window.dispatchEvent(new PointerEvent('pointermove', { pointerId: 7, pointerType: 'pen', button: -1, buttons, clientX: 700, clientY: 400 }));
+    mv(0);
+    mv(2); // 옆 버튼 누름
+    mv(2);
+    mv(0); // 뗌
+  });
+  await page.waitForTimeout(500);
+  expect(screenOf(await state(page)).elements.length).toBe(before - 1);
   // 조합 키(Ctrl+Alt+1) 등록 · 받은 입력 기록
   await page.getByRole('button', { name: '펜 버튼' }).click();
   await page.getByTestId('learn-near').click();
@@ -275,5 +321,6 @@ test('펜 버튼: 가까운 버튼 1·2·3번 = 실행 취소·다시 실행·�
   await page.evaluate(() => window.dispatchEvent(new PointerEvent('pointerdown', { button: 3, pointerType: 'mouse', clientX: 10, clientY: 10 })));
   await expect(page.getByTestId('raw-log')).toContainText('마우스 button=3');
   await expect(page.getByTestId('raw-log')).toContainText('키 Ctrl+Alt+1');
+  await expect(page.getByTestId('raw-log')).toContainText('버튼 상태 바뀜 펜');
   if (SHOTS) await page.screenshot({ path: `${SHOTS}/pen-dialog.png` });
 });

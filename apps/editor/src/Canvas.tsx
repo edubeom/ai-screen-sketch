@@ -8,6 +8,7 @@ import {
   connectorFromEnds,
   createElement,
   deleteElements,
+  elementsContaining,
   hitAt,
   inCenter,
   recognizeShape,
@@ -58,7 +59,7 @@ type Drag =
   | { kind: 'marquee'; start: Pt; cur: Pt; additive: boolean }
   | { kind: 'pan'; startClient: Pt; startPan: Pt }
   | { kind: 'pen'; points: StrokePoint[]; startedAt: number }
-  | { kind: 'erase'; erased: boolean }
+  | { kind: 'erase'; erased: boolean; shield: Set<string> }
   | { kind: 'connect'; sourceId: string; cur: Pt };
 
 interface Pt {
@@ -256,7 +257,7 @@ export function Canvas({ onPenButtons }: { onPenButtons: () => void }) {
     if (s.tool === 'eraser') {
       svg.setPointerCapture(e.pointerId);
       beginGesture();
-      setD({ kind: 'erase', erased: false });
+      setD({ kind: 'erase', erased: false, shield: new Set() });
       eraseAt(p);
       return;
     }
@@ -327,14 +328,19 @@ export function Canvas({ onPenButtons }: { onPenButtons: () => void }) {
     const tol = 6 / getState().zoom;
     const strokes = sc.strokes.filter((st) => strokeHit(st, p, tol));
     let next = sc;
+    const d = dragRef.current?.kind === 'erase' ? dragRef.current : undefined;
     if (strokes.length) for (const h of strokes) next = deleteStroke(next, h.id);
     else {
-      const hit = hitAt(sc, p, tol);
+      const hit = hitAt(sc, p, tol, { ink: true, skip: d?.shield });
       if (!hit || !('element' in hit) || hit.element.props.locked) return;
       next = deleteElements(sc, [hit.element.id]);
     }
+    // 한 번 누르는 동안 지운 자리를 품고 있던 바깥 요소는 지킨다 (펜이 조금 흔들려도 바깥 네모까지 지워지지 않게)
+    if (d) {
+      for (const id of elementsContaining(sc, p)) d.shield.add(id);
+      d.erased = true;
+    }
     previewGesture(mapScreen(getState().project, sc.id, () => next));
-    if (dragRef.current?.kind === 'erase') dragRef.current.erased = true;
   };
 
   /** 펜 끝: 짧게 톡 = 모형 가운데면 글 쓰기, 닫힌 도형 = 모형으로 바꾸기, 나머지 = 필기 */

@@ -59,6 +59,10 @@ describe('모형 인식', () => {
     expect(Math.abs(s!.x - 100)).toBeLessThan(5);
     expect(Math.abs(s!.width - 200)).toBeLessThan(8);
   });
+  it('가로로 긴 막대 네모 (화면 설계의 띠)', () => {
+    expect(recognizeShape(trace([[118, 212], [690, 212], [690, 326], [118, 326]]))?.kind).toBe('rect');
+    expect(recognizeShape(trace([[100, 100], [700, 100], [700, 150], [100, 150]], 30))?.kind).toBe('rect');
+  });
   it('원·타원 (끝이 조금 겹치거나 덜 닫혀도)', () => {
     expect(recognizeShape(ellipse(200, 200, 80, 80))?.kind).toBe('ellipse');
     expect(recognizeShape(ellipse(200, 200, 120, 60, 3, 1.05))?.kind).toBe('ellipse');
@@ -158,6 +162,24 @@ describe('지우개·채우기가 쓰는 hitAt', () => {
     s = { ...s, strokes: [{ id: 'k', color: '#000', width: 3, points: [[55, 55], [70, 70]] }] };
     expect('stroke' in hitAt(s, { x: 60, y: 60 }, 2)!).toBe(true);
     expect(hitAt(s, { x: 500, y: 500 }, 2)).toBeUndefined();
+  });
+  it('지우개(ink): 채우지 않은 모형은 테두리 근처에서만 맞고, skip 은 건너뛴다', () => {
+    const p = createProject('t');
+    const outer = createElement('shape', 0, 0, { id: 'outer', width: 700, height: 500, props: { shapeKind: 'rect' } });
+    const mid = createElement('shape', 100, 200, { id: 'mid', width: 570, height: 115, props: { shapeKind: 'rect' } });
+    const oval = createElement('shape', 160, 260, { id: 'oval', width: 110, height: 40, props: { shapeKind: 'ellipse' } });
+    const s = addElements(p.screens[0], [outer, mid, oval]);
+    const id = (h: ReturnType<typeof hitAt>) => (h && 'element' in h ? h.element.id : undefined);
+    expect(id(hitAt(s, { x: 215, y: 260 }, 2, { ink: true }))).toBe('oval'); // 원 테두리
+    expect(id(hitAt(s, { x: 215, y: 280 }, 2, { ink: true }))).toBeUndefined(); // 원 안쪽 빈 곳
+    expect(id(hitAt(s, { x: 400, y: 250 }, 2, { ink: true }))).toBeUndefined(); // 가운데 네모 안쪽 빈 곳
+    expect(id(hitAt(s, { x: 400, y: 201 }, 2, { ink: true }))).toBe('mid'); // 가운데 네모 테두리
+    expect(id(hitAt(s, { x: 400, y: 201 }, 2, { ink: true, skip: new Set(['mid']) }))).toBeUndefined();
+    // 채우기(ink 아님)는 안쪽 어디든
+    expect(id(hitAt(s, { x: 400, y: 250 }, 2))).toBe('mid');
+    // 칠한 모형은 안쪽도 잉크
+    const filled = { ...s, elements: s.elements.map((e) => (e.id === 'mid' ? { ...e, props: { ...e.props, fill: '#ff0000' } } : e)) };
+    expect(id(hitAt(filled, { x: 400, y: 250 }, 2, { ink: true }))).toBe('mid');
   });
   it('묶음의 마지막 자식을 지우면 묶음도 사라진다', () => {
     const p = createProject('t');

@@ -22,7 +22,7 @@ AI 가 채웁니다 (사용자에게 묻지 않고 프로젝트에서 읽어서)
 
 | 부분 | 무엇으로 | 어디서 | 파일·설정 |
 |---|---|---|---|
-| 화면 | React 19 + Vite 8 정적 웹앱 (SVG 작업판) | 브라우저 (`npm run dev` · 빌드한 apps/editor/dist) | apps/editor/index.html, vite.config.ts, src/main.tsx, App.tsx, src/vite-env.d.ts |
+| 화면 | React 19 + Vite 8 정적 웹앱 (SVG 작업판) | 브라우저 (`npm run dev` · 빌드한 apps/editor/dist) · 공유기 안 다른 기기 (scripts/windows/lan-access.ps1, autostart.ps1) | apps/editor/index.html, vite.config.ts, src/main.tsx, App.tsx, src/vite-env.d.ts |
 | 저장 | 브라우저 IndexedDB | 사용자의 브라우저 | NAMES.md 의 저장 이름 (`ai-screen-sketch`) |
 | 파일 | ZIP (JSZip) · JSON | 내려받기 · 올리기 | packages/exporters/src/bundle.ts |
 | 코드 구성 | npm 워크스페이스 (TypeScript 7) | 내 컴퓨터 | package.json, tsconfig.json |

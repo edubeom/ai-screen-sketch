@@ -26,7 +26,6 @@ export const SLOT_ACTIONS: Record<PenSlot, [string, string, string]> = {
 };
 
 const MULTI_PRESS_MS = 330;
-const BIT: Record<number, number> = { 0: 1, 1: 4, 2: 2, 3: 8, 4: 16, 5: 32 };
 
 let bindings: Record<PenSlot, PenBinding[]> = loadPref('penButtons', DEFAULT_BINDINGS);
 let learning: PenSlot | undefined;
@@ -151,6 +150,18 @@ function onPointerPress(e: PointerEvent, button: number) {
   e.stopImmediatePropagation();
 }
 
+/** buttons 비트 → button 번호 (1 = 펜 닿음·왼쪽은 버튼으로 보지 않는다) */
+const BUTTON_OF_BIT: [number, number][] = [[2, 2], [4, 1], [8, 3], [16, 4], [32, 5]];
+const lastButtons = new Map<number, number>();
+let lastType = '';
+
+function noteDevice(e: PointerEvent) {
+  if (e.pointerType !== lastType) {
+    lastType = e.pointerType;
+    logRaw(`입력 장치: ${TYPE_KO[e.pointerType] ?? e.pointerType}${e.pointerType === 'mouse' ? ' (원격·드라이버 설정에 따라 펜이 마우스로 올 수 있음)' : ''}`);
+  }
+}
+
 export function installPenButtons() {
   // 캡처 단계에서 먼저 받아 작업판의 이동(pan)·선택으로 넘어가지 않게 한다
   window.addEventListener(
@@ -158,6 +169,8 @@ export function installPenButtons() {
     (e) => {
       lastPointer.x = e.clientX;
       lastPointer.y = e.clientY;
+      noteDevice(e);
+      lastButtons.set(e.pointerId, e.buttons);
       logRaw(`누름 ${describePointer(e)}`);
       if (e.button > 0) onPointerPress(e, e.button);
     },
@@ -166,6 +179,7 @@ export function installPenButtons() {
   window.addEventListener(
     'pointerup',
     (e) => {
+      lastButtons.set(e.pointerId, e.buttons);
       if (e.button > 0) logRaw(`뗌 ${describePointer(e)}`);
       // 뒤로·앞으로 버튼을 등록했으면 브라우저가 페이지를 넘기지 않게
       if (e.button > 0 && (learning || Date.now() - lastBoundAt < 1000)) e.preventDefault();
@@ -177,10 +191,15 @@ export function installPenButtons() {
     (e) => {
       lastPointer.x = e.clientX;
       lastPointer.y = e.clientY;
-      // 펜이 닿은 채로 옆 버튼을 누르면 pointerdown 없이 button 이 바뀐 pointermove 로 온다
-      if (e.button > 0 && e.buttons & (BIT[e.button] ?? 0)) {
-        logRaw(`누른 채 버튼 ${describePointer(e)}`);
-        onPointerPress(e, e.button);
+      noteDevice(e);
+      // 펜 옆 버튼은 pointerdown 없이 "누른 버튼 상태(buttons)"만 바뀐 pointermove 로 오기도 한다
+      // (펜이 닿은 채로 누를 때, 또는 펜을 띄운 채(hover) 누를 때) -- 새로 켜진 비트를 버튼 누름으로 본다
+      const prev = lastButtons.get(e.pointerId) ?? 0;
+      if (e.buttons !== prev) {
+        lastButtons.set(e.pointerId, e.buttons);
+        const added = e.buttons & ~prev;
+        logRaw(`버튼 상태 바뀜 ${describePointer(e)} (전 ${prev})`);
+        for (const [bit, button] of BUTTON_OF_BIT) if (added & bit) onPointerPress(e, button);
       }
     },
     true,

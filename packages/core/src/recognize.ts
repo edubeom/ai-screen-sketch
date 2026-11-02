@@ -217,7 +217,9 @@ export function recognizeShape(strokes: StrokePoint[][] | StrokePoint[]): Recogn
   const consider = (t: Template, box: Box) => {
     const size = Math.max(box.w, box.h);
     const minSide = Math.min(box.w, box.h);
-    if (size < MIN_SHAPE_SIZE || minSide < size * 0.2) return;
+    // 화면 설계에는 가로로 긴 막대 네모가 많다 -- 네모는 1:20, 원은 1:7 까지
+    const minRatio = t.kind === 'rect' ? 0.05 : t.kind === 'ellipse' ? 0.14 : 0.2;
+    if (size < MIN_SHAPE_SIZE || minSide < Math.max(12, size * minRatio)) return;
     // 별은 대체로 가로세로가 비슷하다
     if (t.kind === 'star' && (box.w / box.h < 0.6 || box.w / box.h > 1.7)) return;
     // 긴 상자에서 허용 거리가 짧은 변에 비해 너무 크지 않게

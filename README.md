@@ -26,6 +26,25 @@ npm run build      # apps/editor/dist
 npm run preview    # http://localhost:4173
 ```
 
+### 다른 기기(노트북·태블릿)에서 열기 -- Windows + WSL
+
+서버는 모든 주소에서 받도록 되어 있습니다(`vite.config.ts` 의 `host: true`). WSL 에서 띄웠다면 Windows 가 공유기 쪽으로 넘겨 줘야 합니다.
+**관리자 PowerShell** 에서 한 번:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\windows\lan-access.ps1
+```
+
+공유기 주소:5173 → `127.0.0.1:5173`(WSL localhost 전달)로 넘기고, 방화벽은 개인 네트워크에서만 엽니다. WSL 내부 주소가 재부팅으로 바뀌어도 그대로 됩니다.
+Windows 에 로그인하면 서버가 저절로 켜지게 하려면 (관리자 필요 없음):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\windows\autostart.ps1
+```
+
+둘 다 `-Remove` 로 되돌립니다. 로그인이 없는 도구라 같은 공유기의 누구나 열 수 있지만, 설계는 각 브라우저에만 저장되어 서로 보이지 않습니다.
+원격 데스크톱(mRemoteNG 등)으로 쓰면 펜이 마우스로 바뀌어 필압·펜 옆 버튼이 전달되지 않습니다 -- 태블릿이 꽂힌 기기의 브라우저로 직접 여는 것을 권합니다.
+
 처음 열면 빈 프로젝트가 만들어집니다. **프로젝트 ▾ → 예시 열기: AHNDA 할 일 및 일정** 으로 기획서의 인수 사례를 바로 볼 수 있습니다.
 사용 방법은 [`manual/index.html`](manual/index.html) (브라우저로 열기 · `P` 발표 · `N` 대본).
 
