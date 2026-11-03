@@ -15,8 +15,10 @@ export default defineConfig({
   },
   webServer: {
     command: 'npm run build && npm run preview -- --strictPort',
+    // 시험에서는 진짜 AI(Codex)를 부르지 않는다 -- 같은 길로 가짜 답을 준다
+    env: { SKETCH_AI: 'mock' },
     url: 'http://localhost:4173',
-    reuseExistingServer: true,
+    reuseExistingServer: false,
     timeout: 120_000,
   },
 });

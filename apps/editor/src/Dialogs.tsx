@@ -6,6 +6,7 @@ import type { ProjectSummary } from '@sketch/storage';
 import { getState, toast, useEditor } from './store.ts';
 import { adoptProject, newProject, openProject, store } from './persistence.ts';
 import { ADAPTERS, applyImport, exportJson, exportZip, readImportFile } from './exportFlow.ts';
+import { aiStatus, aiToken, analyzeLocally, analyzeWithAi, applyImageImport, setAiToken, type AiStatus, type ImageMode, type ImageTarget, type LocalAnalysis } from './imageImport.ts';
 import ahndaExample from '../../../examples/ahnda-planner/project.json';
 
 function Modal({ title, onClose, children }: { title: string; onClose: () => void; children: ReactNode }) {
@@ -185,8 +186,11 @@ export function ExportDialog({ onClose }: { onClose: () => void }) {
   );
 }
 
+const IMAGE_FILE = /^image\/(png|jpeg|webp|gif)$/;
+
 export function ImportDialog({ onClose }: { onClose: () => void }) {
   const [res, setRes] = useState<ImportResult>();
+  const [image, setImage] = useState<File>();
   const [busy, setBusy] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const currentId = getState().project.id;
@@ -207,21 +211,25 @@ export function ImportDialog({ onClose }: { onClose: () => void }) {
   };
   return (
     <Modal title="가져오기" onClose={onClose}>
-      <p className="muted">이 도구가 내보낸 ZIP 또는 project.json 을 고르세요. 가져오기는 기본적으로 새 프로젝트로 만듭니다.</p>
+      <p className="muted">이 도구가 내보낸 ZIP·project.json, 또는 <b>화면 그림(PNG·JPEG·WebP·GIF)</b> 을 고르세요. 스크린샷·손그림 사진도 됩니다.</p>
       <input
         ref={fileRef}
         type="file"
-        accept=".zip,.json,application/zip,application/json"
+        accept=".zip,.json,application/zip,application/json,image/png,image/jpeg,image/webp,image/gif"
         data-testid="import-file"
         onChange={async (e) => {
           const f = e.target.files?.[0];
           if (!f) return;
+          setRes(undefined);
+          setImage(undefined);
+          if (IMAGE_FILE.test(f.type)) return setImage(f);
           setBusy(true);
           setRes(await readImportFile(f));
           setBusy(false);
         }}
       />
       {busy && <p>읽는 중…</p>}
+      {image && <ImageImportPanel file={image} onDone={onClose} />}
       {res && !res.ok && (
         <div className="callout error" data-testid="import-errors">
           <b>가져올 수 없습니다</b>
@@ -234,14 +242,131 @@ export function ImportDialog({ onClose }: { onClose: () => void }) {
           {res.warnings.length > 0 && <ul>{res.warnings.map((w, i) => <li key={i}>⚠ {w}</li>)}</ul>}
         </div>
       )}
+      {!image && (
+        <footer className="row end">
+          <button className="btn" disabled={!res?.ok || busy || !sameAsOpen} title={sameAsOpen ? '' : '열려 있는 프로젝트와 같은 id 일 때만 덮어쓸 수 있습니다'} onClick={() => go('overwrite')}>
+            열린 프로젝트 덮어쓰기
+          </button>
+          <button className="btn primary" disabled={!res?.ok || busy} onClick={() => go('new')} data-testid="import-new">
+            새 프로젝트로 가져오기
+          </button>
+        </footer>
+      )}
+    </Modal>
+  );
+}
+
+function ImageImportPanel({ file, onDone }: { file: File; onDone: () => void }) {
+  const [mode, setMode] = useState<ImageMode>('shapes');
+  const [target, setTarget] = useState<ImageTarget>('new');
+  const [background, setBackground] = useState(true);
+  const [hint, setHint] = useState('');
+  const [token, setToken] = useState(aiToken());
+  const [status, setStatus] = useState<AiStatus>();
+  const [local, setLocal] = useState<LocalAnalysis>();
+  const [busy, setBusy] = useState('');
+  const [error, setError] = useState('');
+  // 미리보기 주소는 효과 안에서 만들고 지운다 (두 번 붙였다 떼는 개발 모드에서도 깨지지 않게)
+  const [preview, setPreview] = useState('');
+  useEffect(() => {
+    const url = URL.createObjectURL(file);
+    setPreview(url);
+    return () => URL.revokeObjectURL(url);
+  }, [file]);
+  useEffect(() => {
+    void aiStatus().then(setStatus);
+  }, []);
+  // 모양 찾기는 공짜라 고르면 바로 미리 해 둔다
+  useEffect(() => {
+    if (mode === 'image' || local) return;
+    setBusy('모양을 찾는 중… (브라우저에서, 토큰 없음)');
+    analyzeLocally(file)
+      .then(setLocal)
+      .catch((e) => setError(`그림을 분석하지 못했습니다: ${(e as Error).message}`))
+      .finally(() => setBusy(''));
+  }, [mode, file, local]);
+
+  const d = local?.detection;
+  const summary = d
+    ? [`모형 ${d.shapes.length}`, d.fills.length ? `칠한 상자 ${d.fills.length}` : '', `글 자리 ${d.textLines.length}`].filter(Boolean).join(' · ') + ` (${local!.ms}ms)`
+    : '';
+  const aiReady = !!status?.available && !!token;
+
+  const run = async () => {
+    setError('');
+    try {
+      let ai;
+      if (mode === 'ai') {
+        if (!local) return;
+        setAiToken(token);
+        setBusy('AI 가 종류와 글을 붙이는 중… (보통 10~20초)');
+        ai = await analyzeWithAi(file, local, hint);
+      }
+      setBusy('화면에 넣는 중…');
+      const r = await applyImageImport({ file, mode, target, background, local, ai });
+      if (!r) return;
+      const usage = ai?.usage ? ` · 토큰 입력 ${ai.usage.input.toLocaleString()}(캐시 ${ai.usage.cachedInput.toLocaleString()}) 출력 ${ai.usage.output.toLocaleString()}` : ai?.cached ? ' · 전에 분석한 그림이라 토큰 0' : '';
+      toast(`그림을 가져왔습니다${r.count ? ` -- 요소 ${r.count}개` : ''}${usage}`);
+      onDone();
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy('');
+    }
+  };
+
+  return (
+    <div className="image-import" data-testid="image-import">
+      {preview && <img className="image-preview" src={preview} alt="가져올 그림" data-testid="image-preview" />}
+      <div className="row">
+        <span className="muted">넣을 곳</span>
+        <label className="check"><input type="radio" checked={target === 'new'} onChange={() => setTarget('new')} /> 새 화면</label>
+        <label className="check"><input type="radio" checked={target === 'current'} onChange={() => setTarget('current')} /> 지금 화면</label>
+      </div>
+      <div className="radio-list">
+        <label>
+          <input type="radio" name="image-mode" checked={mode === 'image'} onChange={() => setMode('image')} data-testid="image-mode-image" />
+          <b>그림만 넣기</b>
+          <small>토큰 0 · 그림을 깔고 그 위에 직접 그립니다</small>
+        </label>
+        <label>
+          <input type="radio" name="image-mode" checked={mode === 'shapes'} onChange={() => setMode('shapes')} data-testid="image-mode-shapes" />
+          <b>모양 찾기</b>
+          <small>토큰 0 · 브라우저가 네모·원·별·세모·칠한 상자·글 자리를 찾아 고칠 수 있는 요소로 만듭니다 (글 내용은 못 읽음)</small>
+        </label>
+        <label className={status && !status.available ? 'disabled' : ''}>
+          <input type="radio" name="image-mode" checked={mode === 'ai'} disabled={!status?.available} onChange={() => setMode('ai')} data-testid="image-mode-ai" />
+          <b>AI 분석 {status?.provider ? `(${status.provider})` : ''}</b>
+          <small>
+            {status?.available
+              ? '모양 찾기 결과에 AI 가 요소 종류·글을 붙입니다 · 이 서버에 로그인한 계정의 사용량을 씁니다 (한 번에 약 1.3만 토큰, 같은 그림은 다시 0)'
+              : status?.reason ?? 'AI 상태 확인 중…'}
+          </small>
+        </label>
+      </div>
+      {mode === 'ai' && status?.available && (
+        <div className="ai-opts">
+          <label className="field">
+            <span>AI 토큰 (서버 컴퓨터에서 npm run ai-token -- 이 브라우저에 기억)</span>
+            <input value={token} onChange={(e) => setToken(e.target.value)} placeholder="토큰" data-testid="ai-token" />
+          </label>
+          <label className="field">
+            <span>AI 에게 한마디 (선택)</span>
+            <input value={hint} onChange={(e) => setHint(e.target.value)} placeholder="예: 할 일 앱의 메인 화면, 오른쪽은 상세 패널" />
+          </label>
+        </div>
+      )}
+      {mode !== 'image' && (
+        <label className="check"><input type="checkbox" checked={background} onChange={(e) => setBackground(e.target.checked)} /> 원본 그림을 뒤에 깔기 (잠금, 나중에 지워도 됨)</label>
+      )}
+      {summary && mode !== 'image' && <p className="muted" data-testid="image-summary">찾음: {summary}</p>}
+      {busy && <p data-testid="image-busy">{busy}</p>}
+      {error && <div className="callout error">{error}</div>}
       <footer className="row end">
-        <button className="btn" disabled={!res?.ok || busy || !sameAsOpen} title={sameAsOpen ? '' : '열려 있는 프로젝트와 같은 id 일 때만 덮어쓸 수 있습니다'} onClick={() => go('overwrite')}>
-          열린 프로젝트 덮어쓰기
-        </button>
-        <button className="btn primary" disabled={!res?.ok || busy} onClick={() => go('new')} data-testid="import-new">
-          새 프로젝트로 가져오기
+        <button className="btn primary" disabled={!!busy || (mode !== 'image' && !local) || (mode === 'ai' && !aiReady)} onClick={run} data-testid="image-import-go">
+          {mode === 'ai' ? 'AI 분석하고 가져오기' : '가져오기'}
         </button>
       </footer>
-    </Modal>
+    </div>
   );
 }

@@ -12,6 +12,7 @@
 | 로컬 저장 | ✅ 동작 | apps/editor/src/persistence.ts, store.ts, packages/storage/src/index.ts | 고친 뒤 창을 닫았다 열어도 그대로이고 상단에 "저장됨 r번호" (e2e 기준 4) | manual/index.html |
 | 내보내기·가져오기 | ✅ 동작 | apps/editor/src/exportFlow.ts, Dialogs.tsx, packages/exporters/src/bundle.ts, requirements.ts, svg.ts, trace.ts | ZIP 을 내보내고 다시 가져오면 화면·필기·동작이 같고, 깨진 연결이 있으면 내보내기가 막힌다 (e2e 기준 5) | manual/export.html |
 | 전달 어댑터 | ✅ 동작 | packages/adapters/standalone, dev-light, dev-framework (src/index.ts) | Light 로 내보낸 ZIP 에 exports/dev-light/task-card.md·traceability.json 이 있다 (exporters.test.ts) | manual/export.html |
+| 그림 가져오기 | ✅ 동작 | apps/editor/src/imageImport.ts, Dialogs.tsx (ImageImportPanel), actions.ts (storeImageAsset), packages/vision/src/index.ts, packages/core/src/recognize.ts (recognizePointCloud), apps/editor/server/aiBridge.ts, apps/editor/vite.config.ts | 가져오기에서 그림을 고르고 모양 찾기 → 새 화면에 네모·원·글 자리 + 잠긴 원본 (e2e/image.spec.ts) | manual/export.html |
 | AHNDA 예시 | ✅ 동작 | examples/ahnda-planner/build.ts, project.json, apps/editor/src/Dialogs.tsx (예시 열기) | 프로젝트 ▾ → 예시 열기 → 화면 2개·동작 8개 | manual/index.html |
 
 상태: ✅ 동작 · 🚧 만드는 중 · ⚠️ 문제 있음 · 💤 쉬는 중
@@ -24,9 +25,10 @@ AI 가 채웁니다 (사용자에게 묻지 않고 프로젝트에서 읽어서)
 |---|---|---|---|
 | 화면 | React 19 + Vite 8 정적 웹앱 (SVG 작업판) | 브라우저 (`npm run dev` · 빌드한 apps/editor/dist) · 공유기 안 다른 기기 (scripts/windows/lan-access.ps1, autostart.ps1) | apps/editor/index.html, vite.config.ts, src/main.tsx, App.tsx, src/vite-env.d.ts |
 | 저장 | 브라우저 IndexedDB | 사용자의 브라우저 | NAMES.md 의 저장 이름 (`ai-screen-sketch`) |
-| 파일 | ZIP (JSZip) · JSON | 내려받기 · 올리기 | packages/exporters/src/bundle.ts |
+| 파일 | ZIP (JSZip) · JSON · 그림 | 내려받기 · 올리기 | packages/exporters/src/bundle.ts, apps/editor/src/imageImport.ts |
+| AI 분석 (선택) | Codex CLI (서버 컴퓨터의 ChatGPT 로그인) | npm run dev/preview 서버 | apps/editor/server/aiBridge.ts, ~/.config/ai-screen-sketch/ (토큰·캐시) |
 | 코드 구성 | npm 워크스페이스 (TypeScript 7) | 내 컴퓨터 | package.json, tsconfig.json |
-| 시험 | Vitest (단위) · Playwright (브라우저) | 내 컴퓨터 | vitest.config.ts, packages/core/test/core.test.ts, packages/core/test/recognize.test.ts, packages/exporters/test/exporters.test.ts, packages/storage/test/storage.test.ts, playwright.config.ts, e2e/acceptance.spec.ts, e2e/pen.spec.ts, e2e/smoke.spec.ts |
+| 시험 | Vitest (단위) · Playwright (브라우저) | 내 컴퓨터 | vitest.config.ts, packages/core/test/core.test.ts, packages/core/test/recognize.test.ts, packages/exporters/test/exporters.test.ts, packages/storage/test/storage.test.ts, packages/vision/test/vision.test.ts, playwright.config.ts, e2e/acceptance.spec.ts, e2e/pen.spec.ts, e2e/image.spec.ts, e2e/smoke.spec.ts |
 
 ## 함께 쓰는 파일
 여러 기능이 같이 쓰는 파일입니다. 이 파일을 고치면 **모든 기능**을 점검합니다.

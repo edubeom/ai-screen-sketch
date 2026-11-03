@@ -29,6 +29,7 @@ import {
   type ElementType,
   type Interaction,
   type PresetKey,
+  type Project,
   type SketchElement,
 } from '@sketch/core';
 import { describeElement } from '@sketch/exporters';
@@ -266,14 +267,15 @@ const IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 
 /** 이미지 파일을 자산으로 저장하고 이미지 요소를 놓는다 (SVG·외부 URL 은 받지 않는다) */
-export async function addImageFile(file: File, point?: { x: number; y: number }, replaceElementId?: string) {
+/** 이미지 파일을 자산으로 저장한다 (같은 그림이면 있던 자산을 쓴다). 실패하면 알림을 띄우고 undefined */
+export async function storeImageAsset(file: File): Promise<{ project: Project; assetId: string; width: number; height: number } | undefined> {
   if (!IMAGE_TYPES.includes(file.type)) {
     toast('PNG·JPEG·WebP·GIF 이미지만 넣을 수 있습니다 (SVG 는 아직 지원하지 않음)', 'error');
-    return;
+    return undefined;
   }
   if (file.size > MAX_IMAGE_BYTES) {
     toast('이미지가 10MB 보다 큽니다', 'error');
-    return;
+    return undefined;
   }
   const bytes = new Uint8Array(await file.arrayBuffer());
   const sha256 = await sha256Hex(bytes);
@@ -286,7 +288,7 @@ export async function addImageFile(file: File, point?: { x: number; y: number },
     bmp.close();
   } catch {
     toast('이미지를 읽을 수 없습니다', 'error');
-    return;
+    return undefined;
   }
   const s = getState();
   const existing = s.project.assets.find((a) => a.sha256 === sha256);
@@ -297,7 +299,7 @@ export async function addImageFile(file: File, point?: { x: number; y: number },
       await store.putAsset(s.project.id, assetId, file, file.type);
     } catch (e) {
       toast(`이미지를 저장하지 못했습니다: ${(e as Error).message}`, 'error');
-      return;
+      return undefined;
     }
   }
   const url = getState().assetUrls[assetId] ?? URL.createObjectURL(file);
@@ -306,6 +308,14 @@ export async function addImageFile(file: File, point?: { x: number; y: number },
   const project = existing
     ? latest
     : { ...latest, assets: [...latest.assets, { id: assetId, relativePath: `assets/${assetId}.${ext}`, mimeType: file.type, sha256, width, height }] };
+  return { project, assetId, width, height };
+}
+
+export async function addImageFile(file: File, point?: { x: number; y: number }, replaceElementId?: string) {
+  const stored = await storeImageAsset(file);
+  if (!stored) return;
+  const { project, assetId, width, height } = stored;
+  const s = getState();
   const scale = Math.min(1, 400 / Math.max(width, height));
   if (replaceElementId) {
     commit({

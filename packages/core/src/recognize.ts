@@ -160,25 +160,34 @@ interface Score {
   err: number;
 }
 
-function score(data: P[], segs: [P, P][], samples: P[], tol: number): Score {
-  let inl = 0;
+function score(data: P[], segs: [P, P][], samples: P[], tol: number): Score | undefined {
+  // 기준을 넘을 수 없게 되면 바로 그만둔다 (대부분의 후보가 여기서 걸러져 빠르다)
+  const maxMiss = Math.floor(data.length * (1 - MIN_INLIER));
+  let miss = 0;
   let err = 0;
   for (const p of data) {
     let m = Infinity;
-    for (const [a, b] of segs) m = Math.min(m, segDist(p, a, b));
-    if (m <= tol) inl++;
+    for (const [a, b] of segs) {
+      const d = segDist(p, a, b);
+      if (d < m) m = d;
+      if (m <= tol * 0.25) break;
+    }
+    if (m > tol && ++miss > maxMiss) return undefined;
     err += Math.min(m, tol * 2);
   }
-  let cov = 0;
+  const maxGap = Math.floor(samples.length * (1 - MIN_COVER));
+  let gap = 0;
   for (const q of samples) {
+    let covered = false;
     for (const p of data) {
       if (Math.abs(p.x - q.x) <= tol && Math.abs(p.y - q.y) <= tol && dist(p, q) <= tol) {
-        cov++;
+        covered = true;
         break;
       }
     }
+    if (!covered && ++gap > maxGap) return undefined;
   }
-  return { inlier: inl / data.length, cover: cov / samples.length, err: err / data.length };
+  return { inlier: 1 - miss / data.length, cover: 1 - gap / samples.length, err: err / data.length };
 }
 
 function place(polys: [number, number][][], box: Box, step: number): { segs: [P, P][]; samples: P[] } {
@@ -198,18 +207,44 @@ export function recognizeShape(strokes: StrokePoint[][] | StrokePoint[]): Recogn
   const raw = list.map((s) => s.map(([x, y]) => ({ x, y })));
   const all = raw.flat();
   if (all.length < 6) return undefined;
-  const xs = all.map((p) => p.x).sort((a, b) => a - b);
-  const ys = all.map((p) => p.y).sort((a, b) => a - b);
-  const size0 = Math.max(xs[xs.length - 1] - xs[0], ys[ys.length - 1] - ys[0]);
+  const size0 = spanOf(all);
   if (size0 < MIN_SHAPE_SIZE) return undefined;
   // 여러 획이면 서로 닿거나 겹쳐야 한 모형이다 (따로 떨어진 그림은 묶지 않는다)
   if (raw.length > 1 && !connected(raw, size0 * 0.08)) return undefined;
   const step = size0 / 60;
-  let data = raw.flatMap((s) => resample(s, step));
-  if (data.length > 160) data = data.filter((_, i) => i % Math.ceil(data.length / 160) === 0);
+  return matchTemplates(raw.flatMap((s) => resample(s, step)));
+}
 
-  // 삐져나온 꼬리를 빼 보는 상자 후보 (양 끝을 0·4·8·13% 잘라 봄)
-  const trims = [0, 0.04, 0.08, 0.13];
+/**
+ * 순서 없는 점 묶음(그림에서 찾은 잉크 픽셀 등)을 모형으로 알아본다.
+ * 점은 테두리 위에 고르게 퍼져 있어야 한다 (획처럼 이어 그리지 않는다).
+ */
+export function recognizePointCloud(points: [number, number][], minSize = MIN_SHAPE_SIZE): RecognizedShape | undefined {
+  if (points.length < 12) return undefined;
+  const pts = points.map(([x, y]) => ({ x, y }));
+  if (spanOf(pts) < minSize) return undefined;
+  // 그림에서 온 점은 손떨림 꼬리가 적다 -- 상자 후보를 줄여 빠르게
+  return matchTemplates(pts, minSize, [0, 0.05, 0.1]);
+}
+
+function spanOf(pts: P[]): number {
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  for (const p of pts) {
+    if (p.x < x0) x0 = p.x;
+    if (p.x > x1) x1 = p.x;
+    if (p.y < y0) y0 = p.y;
+    if (p.y > y1) y1 = p.y;
+  }
+  return Math.max(x1 - x0, y1 - y0);
+}
+
+function matchTemplates(points: P[], minSize = MIN_SHAPE_SIZE, trims = [0, 0.04, 0.08, 0.13]): RecognizedShape | undefined {
+  let data = points;
+  if (data.length > 160) data = data.filter((_, i) => i % Math.ceil(data.length / 160) === 0);
+  const xs = data.map((p) => p.x).sort((a, b) => a - b);
+  const ys = data.map((p) => p.y).sort((a, b) => a - b);
+
+  // 삐져나온 꼬리를 빼 보는 상자 후보 (양 끝을 trims 만큼 잘라 봄)
   const xRanges = trims.flatMap((lo) => trims.map((hi) => [percentile(xs, lo), percentile(xs, 1 - hi)] as const));
   const yRanges = trims.flatMap((lo) => trims.map((hi) => [percentile(ys, lo), percentile(ys, 1 - hi)] as const));
 
@@ -217,16 +252,16 @@ export function recognizeShape(strokes: StrokePoint[][] | StrokePoint[]): Recogn
   const consider = (t: Template, box: Box) => {
     const size = Math.max(box.w, box.h);
     const minSide = Math.min(box.w, box.h);
-    // 화면 설계에는 가로로 긴 막대 네모가 많다 -- 네모는 1:20, 원은 1:7 까지
-    const minRatio = t.kind === 'rect' ? 0.05 : t.kind === 'ellipse' ? 0.14 : 0.2;
-    if (size < MIN_SHAPE_SIZE || minSide < Math.max(12, size * minRatio)) return;
+    // 화면 설계에는 가로로 긴 막대 네모가 많다 -- 네모는 1:20, 원은 1:7, 세모·별·마름모는 1:3 까지
+    const minRatio = t.kind === 'rect' ? 0.05 : t.kind === 'ellipse' ? 0.14 : 0.3;
+    if (size < minSize || minSide < Math.max(12, size * minRatio)) return;
     // 별은 대체로 가로세로가 비슷하다
     if (t.kind === 'star' && (box.w / box.h < 0.6 || box.w / box.h > 1.7)) return;
     // 긴 상자에서 허용 거리가 짧은 변에 비해 너무 크지 않게
     const tol = Math.min(size, minSide * 3) * TOL;
     const { segs, samples } = place(t.polys, box, size / 40);
     const sc = score(data, segs, samples, tol);
-    if (sc.inlier < MIN_INLIER || sc.cover < MIN_COVER) return;
+    if (!sc) return;
     const err = sc.err / size;
     if (!best || err < best.err - 0.002) best = { kind: t.kind, box, err, vertices: t.vertices };
   };

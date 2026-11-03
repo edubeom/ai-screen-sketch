@@ -64,6 +64,36 @@ powershell -ExecutionPolicy Bypass -File scripts\windows\autostart.ps1
 
 단축키: `V` 선택 · `P` 펜 · `E` 지우개 · `L` 동작 연결 · `Delete` · 방향키(Shift 10px) · `Ctrl/⌘+Z`, `Ctrl/⌘+Shift+Z` · `Ctrl/⌘+C/V/X/D` · `Ctrl/⌘+G`(Shift 풀기) · 스페이스+끌기 · `Ctrl/⌘+휠`
 
+## 그림 가져오기와 AI 분석
+
+**가져오기** 에서 화면 그림(PNG·JPEG·WebP·GIF -- 스크린샷, 손그림 사진)을 고르면 세 가지로 넣을 수 있습니다.
+
+| 방법 | 토큰 | 하는 일 |
+|---|---|---|
+| 그림만 넣기 | 0 | 그림을 화면에 깔고 그 위에 그립니다 |
+| 모양 찾기 | 0 | 브라우저가 네모·원·별·세모·칠한 상자·글 자리를 찾아 고칠 수 있는 요소로 만듭니다 (`packages/vision`, 원본은 잠근 채 뒤에) |
+| AI 분석 | 약 1.3만/장 | 모양 찾기 결과에 서버의 AI 클라이언트가 요소 종류·글·역할을 붙입니다. 같은 그림은 캐시라 다시 0 |
+
+AI 분석은 **이 서버 컴퓨터에 로그인된 Codex CLI**(ChatGPT 계정)를 씁니다 -- API 키가 필요 없고 ChatGPT 요금제 사용량에서 나갑니다.
+`npm run dev`·`npm run preview` 서버에 붙는 선택 모듈(`apps/editor/server/aiBridge.ts`)이라, 정적 호스팅만 하면 꺼집니다.
+
+- 켜기: `codex` 가 PATH 에 있으면 저절로 켜집니다. `SKETCH_AI=off` 로 끄고, `SKETCH_AI_MODEL=<모델>` 로 모델을 고릅니다.
+- 토큰: 공유기 안 다른 기기에서도 열리므로 분석 요청에는 토큰이 필요합니다 -- 서버 컴퓨터에서 `npm run ai-token`, 브라우저에 한 번 넣으면 기억합니다.
+- 안전: Codex 는 빈 임시 폴더에서 읽기 전용 샌드박스·셸 끔·기록 안 남김(`--ephemeral`)·정해진 JSON 모양(`--output-schema`)으로만 돌고, 한 번에 하나, 3분 제한.
+- 캐시: `~/.config/ai-screen-sketch/ai-cache/` (그림·후보·모델이 같으면 다시 부르지 않음).
+
+토큰을 줄이는 방법 (2026-11-03 측정, 802×524 와이어프레임 한 장):
+
+| 방법 | 입력 토큰 |
+|---|---|
+| Codex 기본 | 15,175 |
+| + 그림 분석에 필요 없는 Codex 기능 끄기 (도구 설명이 줄어듦) | **12,792** |
+| 같은 그림 다시 (캐시) | **0** |
+
+- 비용 대부분(약 1.19만)은 Codex 가 매 호출 붙이는 자체 지시문이라, 그림을 더 줄여도 크게 줄지 않습니다. 그래서 **안 부르는 것**이 가장 큽니다: 모양·자리는 브라우저가 찾고(0), AI 는 글·종류가 필요할 때만, 같은 그림은 캐시.
+- 그림은 흑백·긴 변 1024px JPEG 로 보내고(약 900 토큰), 답은 정해진 짧은 JSON(약 480 토큰), 생각은 낮게(`model_reasoning_effort=low`).
+- 더 줄이려면: 여러 화면을 한 번에 묶어 보내기(고정 비용을 나눔), 또는 API 키로 모델을 직접 부르기(고정 지시문이 없어 장당 약 1~2천 토큰 -- 대신 사용량 요금).
+
 ## 설계 묶음(ZIP)과 개발 흐름 연결
 
 ZIP 을 풀면 그대로 설계 폴더가 됩니다. dev-process-light 프로젝트라면 `design/sketch/<project-id>/` 에 풀어 두는 것을 제안합니다.
@@ -81,10 +111,11 @@ ZIP 을 풀면 그대로 설계 폴더가 됩니다. dev-process-light 프로젝
 ## 구조
 
 ```
-apps/editor                     편집기 (React + Vite, 정적 웹앱)
+apps/editor                     편집기 (React + Vite, 정적 웹앱) · server/aiBridge.ts 선택 AI 분석
 packages/core                   설계 데이터 계약 · 편집 명령 · 가져오기/명세 검사
 packages/exporters              요소 모양(화면·PNG 공용) · SVG · 구현 요청문 · ZIP 내보내기/가져오기 · traceability
 packages/storage                IndexedDB 저장소
+packages/vision                 그림에서 모양·글 자리 찾기 (토큰 0)
 packages/adapters/standalone    단독 profile
 packages/adapters/dev-light     dev-process-light profile
 packages/adapters/dev-framework 전문판 전달 초안 profile

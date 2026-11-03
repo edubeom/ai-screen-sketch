@@ -16,7 +16,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "vitest run",
     "e2e": "playwright test",
-    "check": "npm run typecheck && npm run test && npm run build && npm run e2e"
+    "check": "npm run typecheck && npm run test && npm run build && npm run e2e",
+    "ai-token": "node -e \"const f=require('os').homedir()+'/.config/ai-screen-sketch/ai-token';try{console.log('AI 분석 토큰:',require('fs').readFileSync(f,'utf8').trim())}catch{console.log('아직 없습니다 -- npm run dev 로 서버를 한 번 켜면 만들어집니다')}\""
   },
   "devDependencies": {
     "@playwright/test": "^1.64.1",

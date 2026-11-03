@@ -33,4 +33,8 @@
 | 검증 결과 | issues (`SpecIssue`) | 차단 error · 경고 warning · 안내 info |
 | 저장 번호 | revision (`savedRevision`) | 실행 취소 히스토리와 따로 |
 | 브라우저 저장소 | IndexedDB `ai-screen-sketch` (저장소 projects · assets · meta, 열쇠 lastProjectId) | **이름을 바꾸면 쓰던 프로젝트가 안 보인다 -- 바꾸기 전에 말한다** |
+| 그림만 넣기 · 모양 찾기 · AI 분석 | image import mode `image` · `shapes` · `ai` | |
+| 원본 그림 | image 요소 (잠금, 맨 뒤) | |
+| 글 자리 | text 요소 "(글)" | 모양 찾기가 글을 못 읽어 자리만 |
+| AI 토큰 | `x-sketch-token` · `~/.config/ai-screen-sketch/ai-token` · localStorage `ai-screen-sketch.aiToken` | 비밀 -- 저장소·기록에 적지 않는다 |
 | 이 브라우저 편의 설정 | localStorage `ai-screen-sketch.recentColors` · `.recognizeShapes` · `.penButtons` | 프로젝트 데이터가 아님 -- 지워도 설계는 그대로 |

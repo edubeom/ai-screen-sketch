@@ -17,5 +17,5 @@
     "noEmit": true,
     "types": ["node"]
   },
-  "include": ["apps/*/src", "apps/*/vite.config.ts", "examples/**/*.ts", "packages/**/src", "packages/**/test", "e2e", "*.config.ts"]
+  "include": ["apps/*/src", "apps/*/vite.config.ts", "apps/*/server", "examples/**/*.ts", "packages/**/src", "packages/**/test", "e2e", "*.config.ts"]
 }
